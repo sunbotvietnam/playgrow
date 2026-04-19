@@ -1,0 +1,1316 @@
+<!DOCTYPE html>
+<html lang="vi" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đề Án Không Gian Sáng Tạo Sunbot</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --brand-orange: #ea580c;
+            --bg-dark: #020617;
+            --slide-width: 297mm;
+            --slide-height: 209.5mm; 
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0b1120;
+            color: #f8fafc;
+            -webkit-font-smoothing: antialiased;
+            margin: 0; padding: 0;
+            overflow-x: hidden;
+        }
+
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: linear-gradient(to bottom, #f97316, #ea580c); border-radius: 10px; }
+
+        h1, h2, h3, h4, h5, h6 { line-height: 1.4 !important; padding-top: 0.05em; padding-bottom: 0.05em; margin: 0; }
+
+        .text-gradient-3d { 
+            background: linear-gradient(to bottom right, #fed7aa, #ea580c); 
+            -webkit-background-clip: text; background-clip: text; 
+            -webkit-text-fill-color: transparent; color: transparent;
+            filter: drop-shadow(0px 4px 10px rgba(234, 88, 12, 0.4)); 
+            display: inline-block; 
+        }
+
+        .text-gradient-blue {
+            background: linear-gradient(to bottom right, #93c5fd, #3b82f6); 
+            -webkit-background-clip: text; background-clip: text; 
+            -webkit-text-fill-color: transparent; color: transparent;
+        }
+
+        /* --- CONTROLS --- */
+        .floating-controls { position: fixed; top: 20px; right: 20px; z-index: 100; display: flex; gap: 12px; flex-wrap: wrap; justify-content: flex-end;}
+        .btn-action { padding: 10px 20px; border-radius: 12px; font-weight: 800; font-size: 13px; cursor: pointer; transition: all 0.3s; display: inline-flex; align-items: center; gap: 8px; border: none; outline: none; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 10px 20px -5px rgba(0,0,0,0.3);}
+        .btn-orange { background: linear-gradient(135deg, #f97316, #ea580c); color: white; }
+        .btn-orange:hover { transform: translateY(-2px); box-shadow: 0 15px 25px -5px rgba(234,88,12,0.5); }
+        .btn-slate { background: rgba(30,41,59,0.9); backdrop-filter: blur(10px); color: white; border: 1px solid #475569;}
+        .btn-slate:hover { background: #0f172a; border-color: #94a3b8; }
+        .btn-setting { background: #334155; color: white; border: 1px solid #475569; }
+        .btn-setting:hover { background: #475569; }
+
+        /* --- DECK STRUCTURE --- */
+        .deck-wrapper { display: flex; flex-direction: column; align-items: center; gap: 40px; padding: 100px 20px 40px 20px; width: 100%; }
+
+        .slide-page {
+            width: var(--slide-width); height: var(--slide-height); 
+            background: radial-gradient(circle at top right, #1e293b, #0f172a 70%);
+            box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255,255,255,0.1);
+            position: relative; box-sizing: border-box; padding: 14mm 20mm; 
+            display: flex; flex-direction: column; z-index: 10; border-radius: 20px; 
+            overflow: hidden; flex-shrink: 0;
+        }
+
+        .slide-page.cover-page { background: radial-gradient(circle at center, #1e293b 0%, #020617 100%); justify-content: center; }
+
+        .glow-orange { position: absolute; background: #ea580c; border-radius: 50%; filter: blur(120px); opacity: 0.15; pointer-events: none; z-index: 0;}
+        .glow-blue { position: absolute; background: #3b82f6; border-radius: 50%; filter: blur(120px); opacity: 0.1; pointer-events: none; z-index: 0;}
+
+        /* --- HEADER & FOOTER --- */
+        .slide-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; margin-bottom: 20px; z-index: 10; }
+        .slide-header-title { font-size: 14px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.15em; }
+        .slide-footer { margin-top: auto; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; z-index: 10; }
+
+        /* --- TYPOGRAPHY & CARDS --- */
+        .deck-title { font-size: 32px; font-weight: 900; color: #f8fafc; text-transform: uppercase; letter-spacing: -0.01em; margin-bottom: 12px; z-index: 10;}
+        .deck-subtitle { font-size: 15px; font-weight: 500; color: #94a3b8; margin-bottom: 24px; z-index: 10; line-height: 1.5;}
+        
+        .card-3d { background: linear-gradient(145deg, rgba(30,41,59,0.7), rgba(15,23,42,0.9)); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 24px; box-shadow: 0 15px 30px -10px rgba(0,0,0,0.5), inset 0 2px 4px rgba(255,255,255,0.05); z-index: 10; flex: 1; display: flex; flex-direction: column;}
+        .card-3d-orange { background: linear-gradient(145deg, rgba(234,88,12,0.1), rgba(15,23,42,0.9)); border: 1px solid rgba(234, 88, 12, 0.3); border-radius: 16px; padding: 24px; box-shadow: 0 15px 30px -10px rgba(234,88,12,0.2), inset 0 2px 4px rgba(255,255,255,0.05); z-index: 10; flex: 1; display: flex; flex-direction: column;}
+        .card-3d-red { background: linear-gradient(145deg, rgba(220,38,38,0.1), rgba(15,23,42,0.9)); border: 1px solid rgba(220,38,38,0.3); border-radius: 16px; padding: 24px; box-shadow: 0 15px 30px -10px rgba(220,38,38,0.2), inset 0 2px 4px rgba(255,255,255,0.05); z-index: 10; flex: 1; display: flex; flex-direction: column;}
+
+        .deck-list { margin: 0; padding: 0; list-style: none; }
+        .deck-list > li { position: relative; padding-left: 24px; margin-bottom: 12px; font-size: 14.5px; line-height: 1.5; color: #cbd5e1; font-weight: 500;}
+        .deck-list > li::before { content: "❖"; color: var(--brand-orange); font-weight: 900; font-size: 14px; position: absolute; left: 0; top: 2px; filter: drop-shadow(0 2px 4px rgba(234,88,12,0.5)); }
+
+        /* --- WEB Q&A SECTION --- */
+        .qa-wrapper { width: 100%; max-width: 900px; margin: 40px auto 100px auto; padding: 0 20px;}
+        .accordion-item { background: rgba(30, 41, 59, 0.6); border: 1px solid #334155; border-radius: 12px; margin-bottom: 12px; overflow: hidden; transition: all 0.3s;}
+        .accordion-header { padding: 20px 24px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 15px; color: #f8fafc;}
+        .accordion-header:hover { background: rgba(51, 65, 85, 0.8); }
+        .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-out; background: rgba(15, 23, 42, 0.4); }
+        .accordion-content-inner { padding: 0 24px 24px 24px; color: #cbd5e1; font-size: 14px; line-height: 1.7; }
+        .accordion-content-inner ul { list-style-type: disc; padding-left: 20px; margin: 8px 0;}
+        .accordion-icon { transition: transform 0.3s ease; }
+        .accordion-active .accordion-icon { transform: rotate(180deg); }
+        .accordion-active .accordion-content { max-height: 1000px; }
+        .accordion-active { border-color: #ea580c; box-shadow: 0 10px 20px -5px rgba(0,0,0,0.3); }
+
+        /* --- ADMIN CONFIG PANEL --- */
+        #auth-overlay { backdrop-filter: blur(10px); }
+        .config-panel { position: fixed; inset: 0; background: rgba(2,6,23,0.95); backdrop-filter: blur(15px); z-index: 200; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 20px;}
+        .config-panel.active { display: flex; animation: fadeIn 0.3s ease-out forwards; }
+        
+        /* --- HIDDEN PRINT A4 QUOTE (LANDSCAPE) --- */
+        #print-quote-view { display: none; background: white; width: 100%; margin: 0; padding: 0; color: #0f172a; box-sizing: border-box; }
+        
+        /* Chống cắt bảng khi in, auto page break */
+        .quote-table { width: 100%; border-collapse: collapse; font-size: 11.5px; margin-top: 15px; table-layout: fixed; page-break-inside: auto;}
+        .quote-table tr { page-break-inside: avoid; page-break-after: auto; }
+        .quote-table thead { display: table-header-group; }
+        
+        .quote-table th, .quote-table td { border: 1px solid #cbd5e1; padding: 6px 8px; vertical-align: middle; word-wrap: break-word;}
+        .quote-table th { background-color: #f1f5f9; font-weight: bold; text-align: center; text-transform: uppercase; font-size: 10px;}
+        .quote-group { background-color: #fff7ed; color: #ea580c; font-weight: bold; text-transform: uppercase; padding: 6px 8px !important; }
+        .quote-subtotal { background-color: #f8fafc; font-weight: bold; text-align: right; padding: 6px 8px !important; }
+
+        /* --- PRINT STYLES --- */
+        @media print {
+            body { background: white !important; margin: 0; padding: 0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            .no-print { display: none !important; }
+            
+            /* Chế độ in Slide (Landscape) */
+            body.print-mode-deck .deck-wrapper { display: block !important; padding: 0 !important; width: 100% !important; margin: 0 !important;}
+            body.print-mode-deck .qa-wrapper { display: none !important; }
+            body.print-mode-deck .slide-page { 
+                background: radial-gradient(circle at top right, #1e293b, #0f172a 70%) !important;
+                margin: 0 !important; width: 297mm !important; height: 209.5mm !important; 
+                padding: 10mm 15mm !important; border-radius: 0 !important; 
+                page-break-after: always !important; page-break-inside: avoid !important; border: none !important; 
+            }
+            body.print-mode-deck .text-gradient-3d, body.print-mode-deck .text-gradient-blue {
+                background: none !important; -webkit-text-fill-color: #ea580c !important; color: #ea580c !important; text-shadow: none !important;
+            }
+            body.print-mode-deck .glow-orange, body.print-mode-deck .glow-blue { display: none !important; }
+
+            /* Chế độ in Báo Giá (Landscape Auto Height) */
+            body.print-mode-quote .deck-wrapper, body.print-mode-quote .qa-wrapper { display: none !important; }
+            body.print-mode-quote #print-quote-view { 
+                display: block !important; 
+                width: 297mm !important; 
+                margin: 0 auto !important; 
+                padding: 10mm 15mm !important; 
+            }
+        }
+    </style>
+</head>
+<body class="no-select mode-public"> 
+
+    <!-- THẺ STYLE DYNAMIC CHO CHẾ ĐỘ IN SẼ ĐƯỢC JS NHÚNG VÀO ĐÂY -->
+    <style id="dynamic-print-style"></style>
+
+    <!-- OVERLAY BẢO MẬT & CONFIG PANEL -->
+    <div id="auth-overlay" class="fixed inset-0 z-[200] bg-[#0b1120] flex items-center justify-center p-6 hidden no-print">
+        <div class="bg-slate-900/80 backdrop-blur-xl border border-slate-700 p-10 rounded-3xl shadow-2xl w-full max-w-md text-center relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-orange-600 to-amber-500"></div>
+            <h2 class="text-2xl font-black text-white mb-2 uppercase tracking-widest">Cấu Hình Đề Án</h2>
+            <p class="text-slate-400 text-[13px] mb-8 leading-relaxed">Nhập mật khẩu quản trị để tùy biến thông tin dự án.</p>
+            <form id="auth-form" class="space-y-5">
+                <div class="relative">
+                    <input type="password" id="auth-pass" class="w-full px-5 py-4 rounded-xl bg-[#0f172a] border border-slate-600 text-white font-bold tracking-widest focus:outline-none focus:border-orange-500 text-center outline-none" placeholder="Mật khẩu..." required>
+                    <p id="auth-error" class="text-red-400 text-[12px] font-bold mt-2 hidden">Mã bảo mật không đúng!</p>
+                </div>
+                <div class="flex gap-3">
+                    <button type="button" onclick="closeAuth()" class="flex-1 bg-slate-800 text-slate-300 font-bold py-4 rounded-xl">Hủy</button>
+                    <button type="submit" class="flex-1 bg-orange-600 text-white font-bold py-4 rounded-xl">Xác Nhận</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- PANEL ĐỔI TÊN DỰ ÁN -->
+    <div id="config-panel" class="config-panel no-print">
+        <div class="bg-slate-800 p-8 rounded-2xl w-full max-w-lg border border-slate-700 shadow-2xl relative">
+            <button onclick="closeConfig()" class="absolute top-4 right-4 text-slate-400 hover:text-white outline-none">✕ Đóng</button>
+            <h2 class="text-xl font-black text-white uppercase mb-6 border-b border-slate-700 pb-4">⚙️ Tùy Biến Thông Tin Dự Án</h2>
+            
+            <label class="block font-bold text-slate-400 text-xs uppercase mb-2">Tên Đơn vị / Dự án</label>
+            <input type="text" id="cfgProjectName" class="w-full bg-slate-900 border border-slate-600 text-white px-4 py-3 rounded-lg outline-none focus:border-orange-500 mb-6" value="THƯ VIỆN TỈNH QUẢNG NINH">
+            
+            <button onclick="saveConfig()" class="w-full bg-gradient-to-r from-orange-600 to-orange-500 text-white font-bold py-3.5 rounded-xl uppercase tracking-wide hover:shadow-lg transition-all outline-none">Lưu & Áp Dụng</button>
+        </div>
+    </div>
+
+    <!-- FLOATING CONTROLS -->
+    <div class="floating-controls no-print">
+        <button onclick="openAuth()" class="btn-action btn-setting">
+            ⚙️ Cấu Hình Đề Án
+        </button>
+        <a href="https://sunbotvietnam.github.io/portal/profile/" target="_blank" class="btn-action btn-slate">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+            Hồ Sơ Năng Lực
+        </a>
+        <button onclick="printDeck()" class="btn-action btn-orange">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+            In Đề Án (Slide)
+        </button>
+        <button onclick="printQuote()" class="btn-action btn-slate">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            In Báo Giá A4 (Ngang)
+        </button>
+    </div>
+
+    <!-- ======================================================= -->
+    <!-- PHẦN 1: SLIDE DECK (15 SLIDES)                          -->
+    <!-- ======================================================= -->
+    <div class="deck-wrapper" id="presentation-view">
+        
+        <!-- SLIDE 1: COVER -->
+        <div class="slide-page cover-page">
+            <div class="glow-orange w-[800px] h-[800px] top-1/4 right-0"></div>
+            <div class="glow-blue w-[600px] h-[600px] bottom-0 left-0"></div>
+            
+            <div class="flex-grow flex flex-col justify-center items-center text-center relative z-10 w-full h-full">
+                <div class="mb-8 flex items-center justify-center gap-4 border border-slate-700 bg-slate-800/50 px-6 py-3 rounded-full shadow-lg backdrop-blur-sm">
+                    <img src="../../assets/img/logo-sunbot.png" alt="Sunbot Logo" class="h-8 object-contain drop-shadow-md" onerror="this.src='https://placehold.co/100x30/transparent/ea580c?text=SUNBOT'"/>
+                    <span class="text-slate-400 font-bold">×</span>
+                    <span class="font-black text-white tracking-widest text-[16px] uppercase dynamic-project-name">THƯ VIỆN TỈNH QUẢNG NINH</span>
+                </div>
+                
+                <h1 class="text-[52px] font-black text-white leading-[1.1] mb-6 uppercase tracking-tighter drop-shadow-xl">
+                    KHÔNG GIAN TRẢI NGHIỆM<br>SÁNG TẠO THIẾU NHI<br>
+                    <span class="text-gradient-3d mt-2 block">SUNBOT</span>
+                </h1>
+                
+                <div class="flex items-center gap-4 mt-4">
+                    <span class="bg-blue-500/20 text-blue-400 border border-blue-500/30 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest">Trải Nghiệm</span>
+                    <span class="bg-orange-500/20 text-orange-400 border border-orange-500/30 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest">Sáng Tạo</span>
+                    <span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest">Kết Nối Tri Thức</span>
+                </div>
+            </div>
+            
+            <div class="slide-footer w-full relative z-10 px-6 border-t border-slate-700/80 pt-4 mt-auto">
+                <div>
+                    <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1">Đơn vị đề xuất</p>
+                    <p class="text-[13px] font-black text-white uppercase tracking-widest m-0">Công Ty Cổ Phần Công Nghệ Giáo Dục Kiro VN</p>
+                </div>
+                <div class="text-right flex flex-col justify-end">
+                    <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1">Tài liệu</p>
+                    <p class="text-[13px] font-black text-orange-500 uppercase tracking-widest m-0">Đề Án Chiến Lược</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: MỞ VẤN ĐỀ -->
+        <div class="slide-page">
+            <div class="glow-blue w-[500px] h-[500px] -top-20 -right-20"></div>
+            <div class="slide-header">
+                <div class="slide-header-title">Thách Thức & Thực Trạng</div>
+                <div class="font-black text-slate-500 tracking-widest opacity-50">SUNBOT</div>
+            </div>
+            
+            <div class="flex-grow flex flex-col justify-center relative z-10 w-full">
+                <div class="text-center mb-10">
+                    <h2 class="deck-title">BÀI TOÁN KÉP: TÀI NGUYÊN VÀ SỨC HÚT</h2>
+                    <p class="deck-subtitle">Làm thế nào để chuyển đổi từ một không gian lưu trữ thụ động sang một điểm đến hấp dẫn thực sự cho trẻ em?</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch mb-10">
+                    <div class="card-3d bg-slate-800/80 border-slate-600 !p-8">
+                        <div class="w-14 h-14 bg-slate-700 text-white rounded-full flex items-center justify-center text-2xl mb-4 shadow-inner">📚</div>
+                        <h3 class="text-[16px] font-black text-white uppercase mb-3">Tài Nguyên Đồ Sộ</h3>
+                        <p class="text-[14px] text-slate-300 leading-relaxed mb-2">Thư viện sở hữu kho tàng tri thức khổng lồ:</p>
+                        <ul class="text-[13px] text-slate-300 leading-relaxed mb-0 space-y-1 list-disc pl-4 marker:text-slate-500">
+                            <li><strong class="text-white">Tổng số sách:</strong> 119.188 tên (237.023 bản)</li>
+                            <li><strong class="text-white">Kho thiếu nhi:</strong> 16.947 tên (53.081 bản)</li>
+                        </ul>
+                    </div>
+                    <div class="card-3d-red flex flex-col items-start !p-8">
+                        <div class="w-14 h-14 bg-red-500/20 text-red-500 rounded-full flex items-center justify-center text-2xl mb-4 border border-red-500/30">📉</div>
+                        <h3 class="text-[16px] font-black text-white uppercase mb-3">Thực Trạng Bạn Đọc</h3>
+                        <p class="text-[14px] text-slate-300 leading-relaxed mb-2">Nhưng lượng bạn đọc tiếp cận lại rất lèo tèo:</p>
+                        <ul class="text-[13px] text-red-100 leading-relaxed mb-0 space-y-1 list-disc pl-4 marker:text-red-400/50">
+                            <li><strong class="text-white">Bạn đọc:</strong> 2.500 - 3.000 người/năm</li>
+                            <li><strong class="text-white">Trẻ 5-10 tuổi:</strong> Chỉ 38% (Năm 2025: 889 thẻ)</li>
+                        </ul>
+                    </div>
+                    <div class="card-3d-orange flex flex-col items-start !p-8 transform scale-105 z-10 shadow-xl">
+                        <div class="w-14 h-14 bg-orange-500/20 text-orange-500 rounded-full flex items-center justify-center text-2xl mb-4 border border-orange-500/30">💡</div>
+                        <h3 class="text-[16px] font-black text-orange-400 uppercase mb-3">Giải Pháp Đột Phá</h3>
+                        <p class="text-[14px] text-white font-medium leading-relaxed mb-0">Sunbot sẽ là <strong>"Điểm sáng"</strong> thu hút độc giả nhí, chuyển đổi Không gian tĩnh thành <strong>Không gian hoạt động</strong> hấp dẫn và sáng tạo.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer"><span class="dynamic-project-name">Đề án Thư Viện</span><span>Slide 02</span></div>
+        </div>
+
+        <!-- SLIDE 3: GÓC NHÌN MỚI -->
+        <div class="slide-page">
+            <div class="glow-blue w-[600px] h-[600px] top-1/4 left-0 opacity-10"></div>
+            <div class="slide-header">
+                <div class="slide-header-title">Định Hướng Chiến Lược</div>
+                <div class="font-black text-slate-500 tracking-widest opacity-50">SUNBOT</div>
+            </div>
+            
+            <div class="flex-grow flex flex-col justify-center relative z-10 w-full h-full">
+                <div class="text-center mb-10">
+                    <h2 class="deck-title">GÓC NHÌN MỚI VỀ KHÔNG GIAN VĂN HÓA</h2>
+                    <p class="deck-subtitle">Thư viện không chỉ là nơi đọc, mà phải là KHÔNG GIAN TRẢI NGHIỆM TRI THỨC.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+                    <div class="md:col-span-7">
+                        <div class="card-3d-orange !p-8 h-full">
+                            <h3 class="text-[20px] font-black text-orange-400 uppercase mb-6 tracking-wide border-b border-orange-500/30 pb-4">Nơi Trẻ Em Được:</h3>
+                            <ul class="deck-list text-[16px]">
+                                <li class="before:!text-orange-500 text-white font-medium mb-4"><span class="text-orange-400 font-bold">Khám phá</span> thế giới thông qua công nghệ.</li>
+                                <li class="before:!text-orange-500 text-white font-medium mb-4"><span class="text-orange-400 font-bold">Tương tác</span> trực tiếp với tri thức (không chỉ nhìn/nghe).</li>
+                                <li class="before:!text-orange-500 text-white font-medium mb-4"><span class="text-orange-400 font-bold">Làm thử</span> và sáng tạo ra các sản phẩm thực tế.</li>
+                                <li class="before:!text-orange-500 text-white font-medium"><span class="text-orange-400 font-bold">Ghi nhớ</span> sâu sắc bài học thông qua hành động.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="md:col-span-5 flex flex-col gap-4">
+                        <div class="bg-slate-800/80 p-5 rounded-xl border border-slate-700">
+                            <p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">Tham Chiếu Quốc Tế 01</p>
+                            <p class="text-[16px] font-black text-white uppercase tracking-wide m-0">Library Experience Center <span class="text-blue-400 text-sm ml-1">(Mỹ)</span></p>
+                        </div>
+                        <div class="bg-slate-800/80 p-5 rounded-xl border border-slate-700">
+                            <p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">Tham Chiếu Quốc Tế 02</p>
+                            <p class="text-[16px] font-black text-white uppercase tracking-wide m-0">Oodi Library <span class="text-blue-400 text-sm ml-1">(Phần Lan)</span></p>
+                        </div>
+                        <div class="bg-slate-800/80 p-5 rounded-xl border border-slate-700">
+                            <p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">Tham Chiếu Quốc Tế 03</p>
+                            <p class="text-[16px] font-black text-white uppercase tracking-wide m-0">Singapore National Library</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer"><span class="dynamic-project-name">Đề án Thư Viện</span><span>Slide 03</span></div>
+        </div>
+
+        <!-- SLIDE 4: GIẢI PHÁP ĐỀ XUẤT -->
+        <div class="slide-page">
+            <div class="slide-header">
+                <div class="slide-header-title">Định Vị Giải Pháp</div>
+                <div class="font-black text-slate-500 tracking-widest opacity-50">SUNBOT</div>
+            </div>
+            
+            <div class="flex-grow flex flex-col justify-center items-center text-center relative z-10 w-full h-full">
+                <h2 class="text-4xl md:text-5xl font-black text-white mb-6 uppercase tracking-tight">SUNBOT - KHÔNG GIAN TRẢI NGHIỆM<br>DÀNH CHO TRẺ 5–10 TUỔI</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-12 w-full max-w-4xl mt-10">
+                    <div class="card-3d !p-8 text-left border-slate-600 bg-slate-800/50">
+                        <p class="font-black text-slate-400 uppercase tracking-widest mb-6 text-sm border-b border-slate-700 pb-3">KHÔNG PHẢI LÀ:</p>
+                        <ul class="space-y-4 text-[15px] text-slate-300 font-medium">
+                            <li class="flex items-center gap-3"><span class="text-red-500 font-black">✕</span> Một phòng đọc sách khô khan</li>
+                            <li class="flex items-center gap-3"><span class="text-red-500 font-black">✕</span> Một phòng trưng bày robot tĩnh</li>
+                            <li class="flex items-center gap-3"><span class="text-red-500 font-black">✕</span> Một khu vui chơi công nghệ tự do</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="card-3d-orange !p-8 text-left transform scale-110 z-10 shadow-[0_20px_50px_rgba(234,88,12,0.2)]">
+                        <p class="font-black text-orange-500 uppercase tracking-widest mb-6 text-sm border-b border-orange-500/30 pb-3">MÀ LÀ:</p>
+                        <div class="flex items-center h-full pb-8">
+                            <p class="text-3xl font-black text-white uppercase leading-snug">MỘT MÔ HÌNH<br>HOẠT ĐỘNG GIÁO DỤC<br><span class="text-orange-400">HOÀN CHỈNH</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer"><span class="dynamic-project-name">Đề án Thư Viện</span><span>Slide 04</span></div>
+        </div>
+
+        <!-- SLIDE 5: MÔ HÌNH HOẠT ĐỘNG (CORE) -->
+        <div class="slide-page">
+            <div class="slide-header">
+                <div class="slide-header-title">Mô Hình Vận Hành Lõi</div>
+                <div class="font-black text-slate-500 tracking-widest opacity-50">SUNBOT</div>
+            </div>
+            
+            <div class="flex-grow flex flex-col justify-center relative z-10 w-full h-full">
+                <div class="text-center mb-10">
+                    <h2 class="deck-title">CẤU TRÚC MÔ HÌNH HOẠT ĐỘNG</h2>
+                    <p class="deck-subtitle">Tính toán chi tiết mọi điểm chạm, từ đối tượng, hành vi đến nguồn lực duy trì.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Khối trái -->
+                    <div class="space-y-6">
+                        <div class="card-3d !p-6 border-l-4 border-blue-500">
+                            <h3 class="text-[15px] font-black text-blue-400 uppercase mb-3">Ai sử dụng?</h3>
+                            <div class="flex gap-3">
+                                <span class="bg-slate-900 px-3 py-1.5 rounded-lg text-sm text-white font-medium border border-slate-700">Học sinh 5-10 tuổi</span>
+                                <span class="bg-slate-900 px-3 py-1.5 rounded-lg text-sm text-white font-medium border border-slate-700">Đoàn trường học</span>
+                                <span class="bg-slate-900 px-3 py-1.5 rounded-lg text-sm text-white font-medium border border-slate-700">Gia đình cuối tuần</span>
+                            </div>
+                        </div>
+                        <div class="card-3d !p-6 border-l-4 border-orange-500">
+                            <h3 class="text-[15px] font-black text-orange-400 uppercase mb-3">Họ làm gì?</h3>
+                            <ul class="text-[14px] text-slate-300 space-y-2 list-disc pl-4 marker:text-orange-500">
+                                <li>Trải nghiệm lập trình robot + Giải quyết nhiệm vụ.</li>
+                                <li>Tham gia Workshop sáng tạo (STEAM).</li>
+                                <li>Khám phá và tương tác với tài nguyên thư viện.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <!-- Khối phải -->
+                    <div class="space-y-6">
+                        <div class="card-3d !p-6 border-l-4 border-emerald-500">
+                            <h3 class="text-[15px] font-black text-emerald-400 uppercase mb-3">Không gian vận hành ra sao?</h3>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="bg-slate-900 p-3 rounded-lg border border-slate-700 text-center text-sm text-white font-medium">Đón đoàn trải nghiệm</div>
+                                <div class="bg-slate-900 p-3 rounded-lg border border-slate-700 text-center text-sm text-white font-medium">Trải nghiệm mở tự do</div>
+                                <div class="bg-slate-900 p-3 rounded-lg border border-slate-700 text-center text-sm text-white font-medium">Workshop cuối tuần</div>
+                                <div class="bg-slate-900 p-3 rounded-lg border border-slate-700 text-center text-sm text-white font-medium">Sự kiện lễ hội</div>
+                            </div>
+                        </div>
+                        <div class="card-3d !p-6 border-l-4 border-amber-500 bg-gradient-to-r from-amber-900/20 to-transparent">
+                            <h3 class="text-[15px] font-black text-amber-400 uppercase mb-3">Nguồn lực Xã Hội Hóa</h3>
+                            <div class="flex flex-wrap gap-3">
+                                <span class="bg-amber-500/20 text-amber-300 px-3 py-1.5 rounded-lg text-sm font-bold border border-amber-500/30">Bán Vé Workshop</span>
+                                <span class="bg-amber-500/20 text-amber-300 px-3 py-1.5 rounded-lg text-sm font-bold border border-amber-500/30">Hợp đồng thu phí Đoàn trường</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer"><span class="dynamic-project-name">Đề án Thư Viện</span><span>Slide 05</span></div>
+        </div>
+
+        <!-- SLIDE 6: TRẢI NGHIỆM CỤ THỂ -->
+        <div class="slide-page">
+            <div class="slide-header">
+                <div class="slide-header-title">Hành Trình Người Dùng</div>
+                <div class="font-black text-slate-500 tracking-widest opacity-50">SUNBOT</div>
+            </div>
+            
+            <div class="flex-grow flex flex-col justify-center relative z-10 w-full h-full">
+                <div class="text-center mb-12">
+                    <h2 class="deck-title">MỘT BUỔI TRẢI NGHIỆM TIÊU CHUẨN</h2>
+                    <p class="deck-subtitle">Quy trình kịch bản từ 60 – 90 phút được chuẩn hóa thành các chặng chạm (Touch-points).</p>
+                </div>
+
+                <div class="flex justify-between items-center relative mb-12 px-4">
+                    <div class="absolute left-10 right-10 top-1/2 h-1 bg-slate-700 -z-10 transform -translate-y-1/2"></div>
+                    
+                    <div class="flex flex-col items-center gap-3 bg-[#0f172a] px-2">
+                        <div class="w-14 h-14 rounded-full bg-slate-800 border-2 border-slate-500 flex items-center justify-center text-xl shadow-lg">👋</div>
+                        <p class="font-bold text-white text-sm uppercase text-center w-24">Khởi động<br><span class="text-[10px] text-slate-400 normal-case">Làm quen</span></p>
+                    </div>
+                    
+                    <div class="flex flex-col items-center gap-3 bg-[#0f172a] px-2">
+                        <div class="w-14 h-14 rounded-full bg-blue-900/50 border-2 border-blue-500 text-blue-400 flex items-center justify-center text-xl shadow-lg shadow-blue-500/20">🤖</div>
+                        <p class="font-bold text-blue-400 text-sm uppercase text-center w-24">Thử thách<br><span class="text-[10px] text-blue-400/70 normal-case">Lập trình Robot</span></p>
+                    </div>
+                    
+                    <div class="flex flex-col items-center gap-3 bg-[#0f172a] px-2">
+                        <div class="w-14 h-14 rounded-full bg-orange-900/50 border-2 border-orange-500 text-orange-400 flex items-center justify-center text-xl shadow-lg shadow-orange-500/20">⚙️</div>
+                        <p class="font-bold text-orange-400 text-sm uppercase text-center w-24">Hoạt động<br><span class="text-[10px] text-orange-400/70 normal-case">Chế tạo STEAM</span></p>
+                    </div>
+
+                    <div class="flex flex-col items-center gap-3 bg-[#0f172a] px-2">
+                        <div class="w-14 h-14 rounded-full bg-emerald-900/50 border-2 border-emerald-500 text-emerald-400 flex items-center justify-center text-xl shadow-lg shadow-emerald-500/20">🏅</div>
+                        <p class="font-bold text-emerald-400 text-sm uppercase text-center w-24">Ghi nhận<br><span class="text-[10px] text-emerald-400/70 normal-case">Tổng kết Dấu</span></p>
+                    </div>
+                </div>
+
+                <div class="bg-gradient-to-r from-orange-600/20 to-transparent border border-orange-500/30 p-8 rounded-2xl text-center shadow-inner">
+                    <p class="font-black text-orange-500 uppercase tracking-widest text-sm mb-4">Kết Quả Đạt Được Chắc Chắn (The 3 Do's)</p>
+                    <div class="flex justify-center gap-12">
+                        <div class="text-xl font-black text-white">🧠 Trẻ Hiểu</div>
+                        <div class="text-xl font-black text-white">👐 Trẻ Làm</div>
+                        <div class="text-xl font-black text-white">💡 Trẻ Nhớ</div>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer"><span class="dynamic-project-name">Đề án Thư Viện</span><span>Slide 06</span></div>
+        </div>
+
+        <!-- SLIDE 7: CẤU TRÚC KHÔNG GIAN -->
+        <div class="slide-page">
+            <div class="slide-header">
+                <div class="slide-header-title">Thiết Kế Hạ Tầng</div>
+                <div class="font-black text-slate-500 tracking-widest opacity-50">SUNBOT</div>
+            </div>
+            
+            <div class="flex-grow flex flex-col justify-center relative z-10 w-full h-full">
+                <div class="text-center mb-10">
+                    <h2 class="deck-title">CẤU TRÚC KHÔNG GIAN TRẢI NGHIỆM</h2>
+                    <p class="deck-subtitle">Mục tiêu: Đảm bảo không gian luôn tràn ngập hoạt động, không bị rơi vào tình trạng "Trống – Rỗng – Chết".</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                    <div class="card-3d !p-4 flex flex-col items-center text-center justify-center border-t-4 border-slate-500">
+                        <div class="text-3xl mb-3">🧭</div>
+                        <p class="font-bold text-white text-[13px] uppercase">Khu định hướng<br>& điều phối</p>
+                    </div>
+                    <div class="card-3d !p-4 flex flex-col items-center text-center justify-center border-t-4 border-blue-500">
+                        <div class="text-3xl mb-3">🤖</div>
+                        <p class="font-bold text-white text-[13px] uppercase">Khu robot<br>& nhiệm vụ</p>
+                    </div>
+                    <div class="card-3d !p-4 flex flex-col items-center text-center justify-center border-t-4 border-orange-500">
+                        <div class="text-3xl mb-3">⚙️</div>
+                        <p class="font-bold text-white text-[13px] uppercase">Khu STEAM<br>& sáng tạo</p>
+                    </div>
+                    <div class="card-3d !p-4 flex flex-col items-center text-center justify-center border-t-4 border-teal-500">
+                        <div class="text-3xl mb-3">📚</div>
+                        <p class="font-bold text-white text-[13px] uppercase">Khu khám phá<br>& đọc sách</p>
+                    </div>
+                    <div class="card-3d !p-4 flex flex-col items-center text-center justify-center border-t-4 border-amber-500">
+                        <div class="text-3xl mb-3">📸</div>
+                        <p class="font-bold text-white text-[13px] uppercase">Khu thành quả<br>& check-in</p>
+                    </div>
+                </div>
+
+                <div class="mt-10 bg-slate-800/80 border border-slate-700 p-6 rounded-2xl shadow-lg flex items-center justify-center">
+                    <p class="text-[15px] font-medium text-slate-300 text-center m-0 max-w-3xl leading-relaxed">
+                        Thiết kế modulable cho phép các khu vực dễ dàng biến đổi công năng. Sáng làm nơi đón đoàn học sinh trải nghiệm, chiều trở thành khu vực workshop mở cho khách vãng lai, tối ưu hóa công suất sử dụng mặt bằng thư viện.
+                    </p>
+                </div>
+            </div>
+            <div class="slide-footer"><span class="dynamic-project-name">Đề án Thư Viện</span><span>Slide 07</span></div>
+        </div>
+
+        <!-- SLIDE 8: THÀNH PHẦN GIẢI PHÁP -->
+        <div class="slide-page">
+            <div class="slide-header">
+                <div class="slide-header-title">Kiến Trúc Tổng Thể</div>
+                <div class="font-black text-slate-500 tracking-widest opacity-50">SUNBOT</div>
+            </div>
+            
+            <div class="flex-grow flex flex-col justify-center relative z-10 w-full h-full">
+                <div class="text-center mb-8">
+                    <h2 class="deck-title">5 LỚP THÀNH PHẦN GIẢI PHÁP</h2>
+                    <p class="deck-subtitle">Một hệ sinh thái trọn vẹn từ phần cứng, phần mềm đến trải nghiệm thực tế.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- 1 -->
+                    <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-sm relative overflow-hidden">
+                        <div class="absolute -right-4 -top-4 text-6xl text-slate-700 opacity-30 font-black">1</div>
+                        <h3 class="text-[16px] font-black text-white uppercase mb-3 relative z-10">Lõi Sunbot</h3>
+                        <ul class="text-[13px] text-slate-400 space-y-2 list-disc pl-4 marker:text-orange-500">
+                            <li>Robot thông minh</li>
+                            <li>Hệ Bản đồ sa bàn (Map)</li>
+                            <li>Thẻ lệnh điều khiển</li>
+                        </ul>
+                    </div>
+                    <!-- 2 -->
+                    <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-sm relative overflow-hidden">
+                        <div class="absolute -right-4 -top-4 text-6xl text-slate-700 opacity-30 font-black">2</div>
+                        <h3 class="text-[16px] font-black text-white uppercase mb-3 relative z-10">Nội dung trải nghiệm</h3>
+                        <ul class="text-[13px] text-slate-400 space-y-2 list-disc pl-4 marker:text-orange-500">
+                            <li>Sunbot Camp (18 bài)</li>
+                            <li>STEAM theo chủ điểm linh hoạt</li>
+                        </ul>
+                    </div>
+                    <!-- 3 -->
+                    <div class="bg-gradient-to-br from-blue-900/40 to-slate-800 p-6 rounded-2xl border border-blue-500/30 shadow-md relative overflow-hidden transform scale-105 z-10">
+                        <div class="absolute -right-4 -top-4 text-6xl text-blue-500 opacity-20 font-black">3</div>
+                        <h3 class="text-[16px] font-black text-blue-400 uppercase mb-3 relative z-10">Nội dung Bản Địa Hóa</h3>
+                        <ul class="text-[13px] text-slate-300 space-y-2 list-disc pl-4 marker:text-blue-400 font-medium">
+                            <li>Chủ đề Biển đảo Tổ quốc</li>
+                            <li>Chủ đề Làng nghề Văn hóa</li>
+                            <li>Hỗ trợ truyền thông địa phương</li>
+                        </ul>
+                    </div>
+                    <!-- 4 -->
+                    <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-sm relative overflow-hidden">
+                        <div class="absolute -right-4 -top-4 text-6xl text-slate-700 opacity-30 font-black">4</div>
+                        <h3 class="text-[16px] font-black text-white uppercase mb-3 relative z-10">Không gian & Vận hành</h3>
+                        <ul class="text-[13px] text-slate-400 space-y-2 list-disc pl-4 marker:text-orange-500">
+                            <li>Màn hình tương tác chuyên dụng</li>
+                            <li>Nội thất Lab & Trưng bày</li>
+                            <li>Quy trình chuẩn (SOP)</li>
+                        </ul>
+                    </div>
+                    <!-- 5 -->
+                    <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-sm relative overflow-hidden md:col-span-2 lg:col-span-1">
+                        <div class="absolute -right-4 -top-4 text-6xl text-slate-700 opacity-30 font-black">5</div>
+                        <h3 class="text-[16px] font-black text-white uppercase mb-3 relative z-10">Trải nghiệm nâng cao</h3>
+                        <ul class="text-[13px] text-slate-400 space-y-2 list-disc pl-4 marker:text-orange-500">
+                            <li>Hộ chiếu (Passport) check-in</li>
+                            <li>Sticker sưu tầm chặng</li>
+                            <li>Bảng thành tích (Leaderboard)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer"><span class="dynamic-project-name">Đề án Thư Viện</span><span>Slide 08</span></div>
+        </div>
+
+        <!-- SLIDE 9: KHÁC BIỆT CỦA GIẢI PHÁP -->
+        <div class="slide-page">
+            <div class="glow-orange w-[800px] h-[800px] bottom-0 right-0 opacity-20"></div>
+            <div class="slide-header">
+                <div class="slide-header-title">Lợi Thế Độc Tôn</div>
+                <div class="font-black text-slate-500 tracking-widest opacity-50">SUNBOT</div>
+            </div>
+            
+            <div class="flex-grow flex flex-col justify-center items-center text-center relative z-10 w-full h-full">
+                <h2 class="text-3xl md:text-4xl font-black text-slate-400 uppercase tracking-tight mb-8">CHÚNG TA KHÔNG PHẢI LÀ:</h2>
+                
+                <div class="flex gap-6 justify-center mb-12">
+                    <span class="bg-red-500/10 border border-red-500/30 text-red-400 px-6 py-3 rounded-full font-bold text-lg line-through decoration-red-500 decoration-2">Gói Mua sắm thiết bị</span>
+                    <span class="bg-red-500/10 border border-red-500/30 text-red-400 px-6 py-3 rounded-full font-bold text-lg line-through decoration-red-500 decoration-2">Lắp phòng học trống rỗng</span>
+                    <span class="bg-red-500/10 border border-red-500/30 text-red-400 px-6 py-3 rounded-full font-bold text-lg line-through decoration-red-500 decoration-2">Công nghệ rời rạc</span>
+                </div>
+
+                <h2 class="text-3xl md:text-4xl font-black text-white uppercase tracking-tight mb-8">MÀ LÀ BÀN GIAO TRỌN GÓI MỘT</h2>
+                <div class="text-[52px] font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-yellow-400 to-orange-500 uppercase tracking-tighter mb-12 drop-shadow-lg leading-tight">
+                    MÔ HÌNH HOẠT ĐỘNG<br>HOÀN CHỈNH
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 w-full max-w-4xl">
+                    <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 text-white font-bold text-lg">Có Nội Dung</div>
+                    <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 text-white font-bold text-lg">Có Vận Hành</div>
+                    <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 text-white font-bold text-lg">Có Trải Nghiệm</div>
+                    <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 text-orange-400 font-bold text-lg shadow-[0_0_15px_rgba(234,88,12,0.3)]">Có Khả Năng<br>Phát Triển</div>
+                </div>
+            </div>
+            <div class="slide-footer"><span class="dynamic-project-name">Đề án Thư Viện</span><span>Slide 09</span></div>
+        </div>
+
+        <!-- SLIDE 10: VẬN HÀNH THỰC TẾ -->
+        <div class="slide-page">
+            <div class="slide-header">
+                <div class="slide-header-title">Triển Khai & Vận Hành</div>
+                <div class="font-black text-slate-500 tracking-widest opacity-50">SUNBOT</div>
+            </div>
+            
+            <div class="flex-grow flex flex-col justify-center relative z-10 w-full h-full">
+                <div class="text-center mb-12">
+                    <h2 class="deck-title">KHẢ NĂNG VẬN HÀNH THỰC TẾ</h2>
+                    <p class="deck-subtitle">Tiến độ thần tốc, chuyển giao trọn vẹn, triệt tiêu rủi ro gián đoạn.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="card-3d !p-8 flex flex-col items-center text-center">
+                        <div class="w-20 h-20 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center text-4xl mb-6 shadow-inner">⚡</div>
+                        <h3 class="text-xl font-black text-white uppercase mb-3">Triển Khai Nhanh</h3>
+                        <p class="text-sm text-slate-400 mb-4">Toàn bộ quy trình setup không gian, cài đặt phần mềm và trang thiết bị được <strong>hoàn thiện trong ~1 tháng.</strong></p>
+                    </div>
+
+                    <div class="card-3d !p-8 flex flex-col items-center text-center border-orange-500/30 transform scale-105 z-10 shadow-xl">
+                        <div class="w-20 h-20 rounded-full bg-orange-500/20 text-orange-400 flex items-center justify-center text-4xl mb-6 shadow-inner border border-orange-500/50">🚀</div>
+                        <h3 class="text-xl font-black text-orange-400 uppercase mb-3">Vận Hành Ngay</h3>
+                        <ul class="text-sm text-slate-300 text-left space-y-2 mb-0 list-disc pl-4">
+                            <li>Đã có sẵn SOP chuẩn.</li>
+                            <li>Đã có sẵn kịch bản Nội dung.</li>
+                            <li>Đã có sẵn Flow điều phối.</li>
+                        </ul>
+                    </div>
+
+                    <div class="card-3d !p-8 flex flex-col items-center text-center">
+                        <div class="w-20 h-20 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-4xl mb-6 shadow-inner">🛡️</div>
+                        <h3 class="text-xl font-black text-white uppercase mb-3">An Tâm Tuyệt Đối</h3>
+                        <p class="text-sm text-slate-400 mb-0">Ngân sách dự án đã bao gồm vật tư, học liệu để <strong>3 tháng đầu hoạt động không cần bổ sung</strong> bất kỳ chi phí vật tư nào.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer"><span class="dynamic-project-name">Đề án Thư Viện</span><span>Slide 10</span></div>
+        </div>
+
+        <!-- SLIDE 11: GIÁ TRỊ MANG LẠI -->
+        <div class="slide-page">
+            <div class="slide-header">
+                <div class="slide-header-title">Lợi Ích Đa Chiều</div>
+                <div class="font-black text-slate-500 tracking-widest opacity-50">SUNBOT</div>
+            </div>
+            
+            <div class="flex-grow flex flex-col justify-center relative z-10 w-full h-full">
+                <div class="text-center mb-10">
+                    <h2 class="deck-title">GIÁ TRỊ MANG LẠI</h2>
+                    <p class="deck-subtitle">Một dự án tạo ra tiếng vang và lợi ích thực chất cho tất cả các bên tham gia.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-slate-800 p-8 rounded-2xl border-t-4 border-blue-500 shadow-md">
+                        <h3 class="text-lg font-black text-blue-400 uppercase mb-4 text-center">Đối với Đơn vị</h3>
+                        <ul class="text-[14px] text-slate-300 space-y-3 list-disc pl-5">
+                            <li>Tăng vọt lượng bạn đọc thiếu nhi.</li>
+                            <li>Tăng tần suất hoạt động sôi nổi.</li>
+                            <li>Tăng sức hút, xóa bỏ định kiến "không gian tĩnh".</li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-slate-800 p-8 rounded-2xl border-t-4 border-orange-500 shadow-md transform scale-105 z-10">
+                        <h3 class="text-lg font-black text-orange-400 uppercase mb-4 text-center">Đối với Trẻ em</h3>
+                        <ul class="text-[14px] text-slate-300 space-y-3 list-disc pl-5">
+                            <li>Học thông qua trải nghiệm thực tế.</li>
+                            <li>Phát triển tư duy logic và sáng tạo.</li>
+                            <li>Bài học gắn liền với thực tế cuộc sống.</li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-slate-800 p-8 rounded-2xl border-t-4 border-emerald-500 shadow-md">
+                        <h3 class="text-lg font-black text-emerald-400 uppercase mb-4 text-center">Đối với Địa phương</h3>
+                        <ul class="text-[14px] text-slate-300 space-y-3 list-disc pl-5">
+                            <li>Trở thành <strong>mô hình điểm</strong> cấp tỉnh.</li>
+                            <li>Có thể đóng gói để nhân rộng.</li>
+                            <li>Tạo hình ảnh cơ quan đổi mới, quan tâm giáo dục.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer"><span class="dynamic-project-name">Đề án Thư Viện</span><span>Slide 11</span></div>
+        </div>
+
+        <!-- SLIDE 12: TỔNG MỨC ĐẦU TƯ -->
+        <div class="slide-page">
+            <div class="glow-orange w-[800px] h-[800px] bottom-0 left-1/4 opacity-10"></div>
+            <div class="slide-header">
+                <div class="slide-header-title">Ngân Sách Dự Án</div>
+                <div class="font-black text-slate-500 tracking-widest opacity-50">SUNBOT</div>
+            </div>
+            
+            <div class="flex-grow flex flex-col justify-center relative z-10 w-full h-full">
+                <div class="text-center mb-8">
+                    <h2 class="deck-title">TỔNG MỨC ĐẦU TƯ</h2>
+                    <p class="deck-subtitle">Ngân sách trọn gói, cam kết không phát sinh trong suốt quá trình setup và 3 tháng vận hành đầu tiên.</p>
+                </div>
+
+                <div class="bg-slate-800/80 backdrop-blur-md p-10 rounded-3xl border border-slate-700 shadow-2xl max-w-4xl mx-auto w-full text-center">
+                    <p class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-2">Tổng giá trị đề xuất</p>
+                    <h3 class="text-5xl md:text-[64px] font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-yellow-300 mb-8 drop-shadow-md">
+                        ~ 500.000.000 VNĐ
+                    </h3>
+                    
+                    <div class="w-full border-t border-slate-700 my-8 relative">
+                        <div class="absolute left-1/2 -translate-x-1/2 -top-3 bg-slate-800 px-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Bao gồm 5 Trụ cột</div>
+                    </div>
+
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                        <div class="bg-slate-900 p-4 rounded-xl border border-slate-700 text-white font-bold text-sm">Thiết bị</div>
+                        <div class="bg-slate-900 p-4 rounded-xl border border-slate-700 text-white font-bold text-sm">Nội dung</div>
+                        <div class="bg-slate-900 p-4 rounded-xl border border-slate-700 text-white font-bold text-sm">Không gian</div>
+                        <div class="bg-slate-900 p-4 rounded-xl border border-slate-700 text-white font-bold text-sm">Vận hành</div>
+                        <div class="bg-orange-900/30 p-4 rounded-xl border border-orange-500/50 text-orange-400 font-bold text-sm md:col-span-1 col-span-2">Kích hoạt</div>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer"><span class="dynamic-project-name">Đề án Thư Viện</span><span>Slide 12</span></div>
+        </div>
+
+        <!-- SLIDE 13: TẦM NHÌN DÀI HẠN -->
+        <div class="slide-page">
+            <div class="slide-header">
+                <div class="slide-header-title">Phát Triển Bền Vững</div>
+                <div class="font-black text-slate-500 tracking-widest opacity-50">SUNBOT</div>
+            </div>
+            
+            <div class="flex-grow flex flex-col justify-center relative z-10 w-full h-full text-center">
+                <h2 class="text-4xl font-black text-white uppercase tracking-tight mb-4">TẦM NHÌN DÀI HẠN</h2>
+                <div class="w-20 h-1 bg-blue-500 mx-auto rounded-full mb-12"></div>
+                
+                <div class="bg-gradient-to-r from-blue-900/40 to-transparent border-l-4 border-blue-500 p-8 rounded-r-2xl max-w-3xl mx-auto mb-12 text-left shadow-lg flex justify-between items-center">
+                    <div>
+                        <h3 class="text-2xl font-black text-blue-400 uppercase mb-2 dynamic-project-name">THƯ VIỆN TỈNH QUẢNG NINH</h3>
+                        <p class="text-lg text-white font-medium m-0">Điểm Sáng Mô Hình Tiên Phong</p>
+                    </div>
+                    <div class="text-5xl">🌟</div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+                    <div class="card-3d !p-8">
+                        <div class="text-3xl mb-4">📚</div>
+                        <p class="font-bold text-white text-[15px] leading-relaxed">Mở rộng sang các thư viện vệ tinh khác trong tỉnh.</p>
+                    </div>
+                    <div class="card-3d !p-8">
+                        <div class="text-3xl mb-4">🏢</div>
+                        <p class="font-bold text-white text-[15px] leading-relaxed">Triển khai thành các trung tâm trải nghiệm văn hóa độc lập.</p>
+                    </div>
+                    <div class="card-3d !p-8">
+                        <div class="text-3xl mb-4">🤝</div>
+                        <p class="font-bold text-orange-400 text-[15px] leading-relaxed">Phát triển sâu rộng mô hình Xã hội hóa Giáo dục.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer"><span class="dynamic-project-name">Đề án Thư Viện</span><span>Slide 13</span></div>
+        </div>
+
+        <!-- SLIDE 14: CÂU CHỐT -->
+        <div class="slide-page">
+            <div class="glow-orange w-full h-[600px] top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 opacity-20"></div>
+            
+            <div class="flex-grow flex flex-col justify-center items-center text-center relative z-10 w-full h-full">
+                <p class="text-2xl md:text-3xl font-bold text-slate-400 mb-8 uppercase tracking-widest">ĐÂY KHÔNG PHẢI LÀ MỘT DỰ ÁN THIẾT BỊ</p>
+                <div class="w-16 h-1 bg-slate-600 mb-12"></div>
+                <p class="text-xl text-slate-300 mb-4 uppercase tracking-widest">ĐÂY LÀ:</p>
+                <h2 class="text-4xl md:text-5xl lg:text-[60px] font-black text-white leading-tight uppercase tracking-tighter drop-shadow-2xl">
+                    MỘT MÔ HÌNH TRẢI NGHIỆM<br>
+                    <span class="text-gradient-3d">GIÁO DỤC CÓ THỂ VẬN HÀNH</span><br>
+                    PHÁT TRIỂN & NHÂN RỘNG
+                </h2>
+            </div>
+            <div class="slide-footer"><span class="dynamic-project-name">Đề án Thư Viện</span><span>Slide 14</span></div>
+        </div>
+
+        <!-- SLIDE 15: THANK YOU -->
+        <div class="slide-page cover-page">
+            <div class="flex-grow flex flex-col justify-center items-center text-center relative z-10 w-full h-full">
+                <img src="../../assets/img/logo-sunbot.png" alt="Sunbot" class="h-20 mb-10 drop-shadow-lg" onerror="this.src='https://placehold.co/200x60/transparent/ea580c?text=SUNBOT'"/>
+                <h1 class="text-5xl font-black text-white uppercase tracking-widest mb-6">XIN TRÂN TRỌNG CẢM ƠN</h1>
+                <p class="text-lg text-slate-400 font-medium">Kính chúc Quý Lãnh đạo sức khỏe và dự án thành công tốt đẹp.</p>
+                
+                <div class="mt-16 animate-bounce text-slate-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                </div>
+                <p class="text-xs text-slate-500 uppercase tracking-widest mt-2">Cuộn xuống để xem Q&A</p>
+            </div>
+        </div>
+
+    </div> <!-- End Deck Wrapper -->
+
+    <!-- ======================================================= -->
+    <!-- PHẦN 2: Q&A SECTION (WEB VIEW ONLY)                     -->
+    <!-- ======================================================= -->
+    <div class="qa-wrapper no-print">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl font-black text-white uppercase tracking-tight mb-4">Q&A – GIẢI PHÁP KHÔNG GIAN TRẢI NGHIỆM SUNBOT</h2>
+            <p class="text-slate-400 text-sm">Bộ câu hỏi thường gặp giúp làm rõ mọi khía cạnh vận hành và giá trị của dự án.</p>
+        </div>
+
+        <!-- Accordion Q&A -->
+        <div class="space-y-3">
+            <!-- Q1 -->
+            <div class="accordion-item accordion-active">
+                <div class="accordion-header" onclick="toggleAccordion(this)">
+                    <span>1. Không gian này được thiết kế dành cho đối tượng nào?</span>
+                    <svg class="accordion-icon w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+                <div class="accordion-content">
+                    <div class="accordion-content-inner">
+                        Không gian được xây dựng dành cho trẻ từ 5–10 tuổi, với 3 nhóm sử dụng chính:
+                        <ul>
+                            <li>Học sinh tham gia theo đoàn trường</li>
+                            <li>Trẻ em đến thư viện cùng gia đình</li>
+                            <li>Nhóm tham gia workshop và hoạt động cuối tuần</li>
+                        </ul>
+                        Thiết kế đảm bảo: phù hợp nhận thức độ tuổi, dễ tiếp cận, có thể tham gia ngay mà không cần chuẩn bị trước.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Q2 -->
+            <div class="accordion-item">
+                <div class="accordion-header" onclick="toggleAccordion(this)">
+                    <span>2. Trẻ sẽ làm gì khi tham gia trải nghiệm?</span>
+                    <svg class="accordion-icon w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+                <div class="accordion-content">
+                    <div class="accordion-content-inner">
+                        Một buổi trải nghiệm được thiết kế theo hành trình rõ ràng:
+                        <ul>
+                            <li>Làm quen và định hướng</li>
+                            <li>Thực hiện nhiệm vụ với robot</li>
+                            <li>Tham gia hoạt động sáng tạo (STEAM)</li>
+                            <li>Ghi nhận kết quả và hoàn thành hành trình</li>
+                        </ul>
+                        Mỗi hoạt động đều có mục tiêu cụ thể, giúp trẻ: hiểu vấn đề, thao tác trực tiếp, làm việc nhóm, ghi nhớ thông qua trải nghiệm.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Q3 -->
+            <div class="accordion-item">
+                <div class="accordion-header" onclick="toggleAccordion(this)">
+                    <span>3. Giải pháp này có phù hợp với môi trường dự án không?</span>
+                    <svg class="accordion-icon w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+                <div class="accordion-content">
+                    <div class="accordion-content-inner">
+                        Giải pháp được thiết kế chuyên biệt để tạo ra một lớp trải nghiệm bổ sung:
+                        <ul>
+                            <li>Kết nối hoạt động với nội dung tri thức</li>
+                            <li>Tạo cầu nối giữa “đọc – hiểu – làm”</li>
+                            <li>Giữ được tinh thần học tập nhưng không mang tính lớp học thụ động</li>
+                        </ul>
+                        Không gian sẽ là điểm chạm tiếp cận mới để trẻ đến gần hơn với tri thức công nghệ.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Q4 -->
+            <div class="accordion-item">
+                <div class="accordion-header" onclick="toggleAccordion(this)">
+                    <span>4. Không gian này vận hành theo hình thức nào?</span>
+                    <svg class="accordion-icon w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+                <div class="accordion-content">
+                    <div class="accordion-content-inner">
+                        Không gian được thiết kế để vận hành linh hoạt theo nhiều hình thức:
+                        <ul>
+                            <li>Đón đoàn trường theo lịch</li>
+                            <li>Trải nghiệm mở cho khách tự do</li>
+                            <li>Workshop theo chủ đề</li>
+                            <li>Sự kiện định kỳ</li>
+                        </ul>
+                        Nhờ đó, mô hình không bị phụ thuộc vào một hình thức duy nhất và có thể duy trì hoạt động liên tục.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Q5 -->
+            <div class="accordion-item">
+                <div class="accordion-header" onclick="toggleAccordion(this)">
+                    <span>5. Việc tổ chức hoạt động có phức tạp không?</span>
+                    <svg class="accordion-icon w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+                <div class="accordion-content">
+                    <div class="accordion-content-inner">
+                        Các hoạt động đã được chuẩn hóa thành:
+                        <ul>
+                            <li>Kịch bản trải nghiệm</li>
+                            <li>Slide điều phối</li>
+                            <li>Bộ nhiệm vụ cụ thể</li>
+                            <li>Quy trình vận hành (SOP)</li>
+                        </ul>
+                        Người vận hành không cần giảng dạy, mà chỉ cần điều phối, hướng dẫn và hỗ trợ trẻ. Điều này giúp giảm phụ thuộc vào cá nhân, đảm bảo tính ổn định lâu dài.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Q6 -->
+            <div class="accordion-item">
+                <div class="accordion-header" onclick="toggleAccordion(this)">
+                    <span>6. Không gian có thể vận hành ngay sau khi bàn giao không?</span>
+                    <svg class="accordion-icon w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+                <div class="accordion-content">
+                    <div class="accordion-content-inner">
+                        <strong>Có.</strong> Giải pháp được thiết kế theo nguyên tắc “lắp đặt xong là vận hành được ngay”. Bao gồm:
+                        <ul>
+                            <li>Nội dung đã hoàn thiện</li>
+                            <li>Hệ thống hướng dẫn</li>
+                            <li>Vật tư trải nghiệm</li>
+                            <li>Quy trình rõ ràng</li>
+                        </ul>
+                        Ngoài ra, giai đoạn đầu có hỗ trợ đồng hành để đảm bảo vận hành ổn định.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Q7 -->
+            <div class="accordion-item">
+                <div class="accordion-header" onclick="toggleAccordion(this)">
+                    <span>7. Không gian có đảm bảo duy trì hoạt động liên tục không?</span>
+                    <svg class="accordion-icon w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+                <div class="accordion-content">
+                    <div class="accordion-content-inner">
+                        Giải pháp đã tính đến yếu tố duy trì:
+                        <ul>
+                            <li>Nội dung có thể lặp lại theo nhiều cấp độ</li>
+                            <li>Vật tư được chuẩn bị đủ cho giai đoạn vận hành ban đầu</li>
+                            <li>Hệ thống nhiệm vụ có thể xoay vòng</li>
+                        </ul>
+                        Điều này giúp không gian không bị “cạn nội dung” và không phụ thuộc vào việc bổ sung liên tục.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Q8 -->
+            <div class="accordion-item">
+                <div class="accordion-header" onclick="toggleAccordion(this)">
+                    <span>8. Vai trò của robot trong không gian này là gì?</span>
+                    <svg class="accordion-icon w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+                <div class="accordion-content">
+                    <div class="accordion-content-inner">
+                        Robot là công cụ hỗ trợ trải nghiệm, không phải mục tiêu chính. Thông qua robot, trẻ:
+                        <ul>
+                            <li>Giải quyết nhiệm vụ</li>
+                            <li>Tư duy logic</li>
+                            <li>Phối hợp nhóm</li>
+                        </ul>
+                        Robot giúp biến kiến thức thành hành động, từ đó tăng hiệu quả học tập.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Q9 -->
+            <div class="accordion-item">
+                <div class="accordion-header" onclick="toggleAccordion(this)">
+                    <span>9. Điểm khác biệt của giải pháp này là gì?</span>
+                    <svg class="accordion-icon w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+                <div class="accordion-content">
+                    <div class="accordion-content-inner">
+                        Khác biệt nằm ở việc giải pháp không dừng ở thiết bị hoặc nội dung riêng lẻ. Giải pháp bàn giao:
+                        <ul>
+                            <li>Một không gian hoàn chỉnh</li>
+                            <li>Một hệ thống hoạt động rõ ràng</li>
+                            <li>Một trải nghiệm có cấu trúc</li>
+                        </ul>
+                        Điều này giúp mô hình dễ triển khai, dễ vận hành và dễ mở rộng.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Q10 -->
+            <div class="accordion-item">
+                <div class="accordion-header" onclick="toggleAccordion(this)">
+                    <span>10. Không gian có thể phát triển thêm trong tương lai không?</span>
+                    <svg class="accordion-icon w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+                <div class="accordion-content">
+                    <div class="accordion-content-inner">
+                        <strong>Có.</strong> Giải pháp được thiết kế mở:
+                        <ul>
+                            <li>Có thể bổ sung chủ đề mới</li>
+                            <li>Có thể mở rộng hoạt động</li>
+                            <li>Có thể tích hợp thêm các chương trình</li>
+                        </ul>
+                        Đặc biệt, nội dung có thể được phát triển theo đặc thù địa phương và nhu cầu thực tế của đơn vị.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Q11 -->
+            <div class="accordion-item">
+                <div class="accordion-header" onclick="toggleAccordion(this)">
+                    <span>11. Dự án này mang lại giá trị gì cho Đơn vị?</span>
+                    <svg class="accordion-icon w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+                <div class="accordion-content">
+                    <div class="accordion-content-inner">
+                        Giải pháp giúp đơn vị:
+                        <ul>
+                            <li>Tăng lượng bạn đọc thiếu nhi</li>
+                            <li>Tăng tần suất hoạt động</li>
+                            <li>Tạo điểm đến hấp dẫn</li>
+                            <li>Nâng cao vai trò trong hệ sinh thái giáo dục</li>
+                        </ul>
+                        Đây là bước chuyển đổi chiến lược từ “không gian tĩnh” sang “không gian hoạt động”.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Q12 -->
+            <div class="accordion-item">
+                <div class="accordion-header" onclick="toggleAccordion(this)">
+                    <span>12. Dự án này mang lại giá trị gì cho trẻ em?</span>
+                    <svg class="accordion-icon w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+                <div class="accordion-content">
+                    <div class="accordion-content-inner">
+                        Trẻ không chỉ tiếp cận tri thức, mà còn:
+                        <ul>
+                            <li>Trải nghiệm trực tiếp</li>
+                            <li>Phát triển tư duy</li>
+                            <li>Rèn luyện kỹ năng</li>
+                            <li>Học thông qua hành động</li>
+                        </ul>
+                        Điều này giúp việc học trở nên tự nhiên, hứng thú và hiệu quả hơn.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Q13 -->
+            <div class="accordion-item">
+                <div class="accordion-header" onclick="toggleAccordion(this)">
+                    <span>13. Mô hình này có thể trở thành điểm sáng của địa phương không?</span>
+                    <svg class="accordion-icon w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+                <div class="accordion-content">
+                    <div class="accordion-content-inner">
+                        <strong>Có.</strong> Với việc tích hợp nội dung đặc thù Quảng Ninh và thiết kế trải nghiệm rõ ràng, không gian có thể trở thành:
+                        <ul>
+                            <li>Mô hình mẫu cấp tỉnh</li>
+                            <li>Điểm tham quan – học tập cho các đơn vị khác</li>
+                            <li>Nền tảng để nhân rộng</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-12 text-center p-8 bg-slate-800 rounded-2xl border border-slate-700">
+                <p class="text-orange-400 font-bold mb-2 uppercase tracking-widest text-[11px]">Thông Điệp Cốt Lõi</p>
+                <p class="text-white font-medium text-[16px] leading-relaxed m-0">Đây không chỉ là một không gian trải nghiệm. Đây là một <strong>mô hình hoạt động giáo dục có thể vận hành, phát triển và lan tỏa.</strong></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================================================= -->
+    <!-- PHẦN 3: BẢNG BÁO GIÁ CHI TIẾT (ẨN TRÊN WEB, CHỈ HIỆN KHI IN) -->
+    <!-- ======================================================= -->
+    <div id="print-quote-view" class="hidden no-print">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+            <div>
+                <h1 style="font-size: 16px; font-weight: 900; margin: 0 0 4px 0; color: #0f172a; text-transform: uppercase;">BẢNG GIÁ ĐỀ XUẤT</h1>
+                <p style="font-size: 12px; margin: 0; color: #475569;">Giải pháp Không gian Trải nghiệm Sáng tạo Sunbot tại <span class="dynamic-project-name">Thư viện tỉnh Quảng Ninh</span></p>
+            </div>
+            <img src="../../assets/img/logo-sunbot.png" style="height: 30px;" onerror="this.style.display='none'">
+        </div>
+        
+        <div style="font-size: 11px; margin-bottom: 15px; border: 1px solid #cbd5e1; padding: 10px; border-radius: 4px;">
+            <p style="margin: 0 0 4px 0;"><strong>Đơn vị đề xuất:</strong> Công ty Cổ phần Công nghệ Giáo dục Kiro Việt Nam</p>
+            <p style="margin: 0 0 4px 0;"><strong>Phạm vi:</strong> Không gian trải nghiệm dành cho trẻ 5–10 tuổi, vận hành theo mô hình trải nghiệm tại thư viện</p>
+            <p style="margin: 0;"><strong>Ghi chú:</strong> Bảng giá theo format chủ đầu tư; cấu trúc gói đã tối ưu cho không gian thư viện, 3 tháng demo không bổ sung vật tư</p>
+        </div>
+
+        <table class="quote-table" id="quote-table-content">
+            <!-- JS will populate this table based on the Data Array -->
+        </table>
+
+        <div style="font-size: 11px; margin-top: 15px; font-style: italic; color: #475569;">
+            <p style="margin: 0 0 4px 0; font-weight: bold; text-transform: uppercase;">Ghi chú thương mại:</p>
+            <p style="margin: 0;">1. Bảng giá áp dụng theo format chủ đầu tư; cơ cấu hạng mục đã tích hợp đồng bộ để đảm bảo tính hoàn chỉnh của mô hình.</p>
+        </div>
+        
+        <div style="display: flex; justify-content: flex-end; margin-top: 30px; text-align: center; font-size: 13px; padding-right: 50px;">
+            <div style="width: 300px;">
+                <p style="margin-bottom: 10px;"><span class="dynamic-date-text italic text-slate-600">Hà Nội, ngày ... tháng ... năm ...</span></p>
+                <p style="font-weight: bold; margin-bottom: 60px; text-transform: uppercase;">CÔNG TY CP CÔNG NGHỆ GIÁO DỤC KIRO VIỆT NAM</p>
+                <p>(Ký, đóng dấu và ghi rõ họ tên)</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // DATA BÁO GIÁ CHI TIẾT (Bóc tách từ file CSV 529.750.000)
+        const QUOTE_DATA = [
+            { group: "NHÓM A. Thiết bị lõi Sunbot & điều phối trải nghiệm" },
+            { code: "A", name: "Robot Sunbot", desc: "Robot tương tác sử dụng cho các trạm nhiệm vụ và hoạt động nhóm", unit: "bộ", qty: 10, price: 5750000, total: 57500000 },
+            { code: "A", name: "Bản đồ robot chuẩn bản bền", desc: "Bản đồ trải nghiệm chất liệu bền, phù hợp cường độ sử dụng", unit: "bộ", qty: 8, price: 750000, total: 6000000 },
+            { code: "A", name: "Bộ chướng ngại vật Sunbot chuẩn", desc: "Bộ vật cản và phụ kiện tạo nhiệm vụ đa cấp độ", unit: "bộ", qty: 6, price: 1875000, total: 11250000 },
+            { code: "A", name: "Bộ thẻ lệnh, thẻ đích, flashcard, mission card", desc: "Bộ công cụ điều phối nhiệm vụ và hoạt động theo nhóm", unit: "gói", qty: 1, price: 5000000, total: 5000000 },
+            { code: "A", name: "Android Box", desc: "Thiết bị hỗ trợ kết nối và trình chiếu", unit: "bộ", qty: 1, price: 1500000, total: 1500000 },
+            { code: "A", name: "Tablet điều phối", desc: "Thiết bị di động dành cho người điều phối không gian", unit: "chiếc", qty: 1, price: 8500000, total: 8500000 },
+            { code: "A", name: "Màn hình tương tác thông minh 65 Inch", desc: "Màn hình hiển thị trung tâm kèm khung di động", unit: "chiếc", qty: 1, price: 40000000, total: 40000000 },
+            { subtotal: "Cộng nhóm A", value: 129750000 },
+            
+            { group: "NHÓM B. Nội dung số, bản quyền phần mềm & học liệu nền" },
+            { code: "B", name: "Bản quyền phần mềm & hệ thống giáo án số (3 năm)", desc: "Cấp quyền sử dụng phần mềm Sunbot và học liệu số định danh", unit: "gói", qty: 1, price: 45000000, total: 45000000 },
+            { code: "B", name: "Sunbot Camp (18 bài)", desc: "Bộ nội dung trải nghiệm chuẩn hóa theo mô hình workshop/trạm", unit: "gói", qty: 1, price: 25000000, total: 25000000 },
+            { code: "B", name: "Thư viện âm nhạc & hình hiệu Sunbot", desc: "Tài nguyên số để tạo hiệu ứng âm thanh, hình ảnh cho không gian", unit: "gói", qty: 1, price: 13750000, total: 13750000 },
+            { subtotal: "Cộng nhóm B", value: 83750000 },
+
+            { group: "NHÓM C. Gói nội dung đặc thù bản địa hóa" },
+            { code: "C", name: "Bản đồ hành trình địa phương", desc: "Bản đồ trải nghiệm thiết kế riêng với các địa danh, di sản bản địa", unit: "gói", qty: 1, price: 15000000, total: 15000000 },
+            { code: "C", name: "Kịch bản trải nghiệm bản địa hóa", desc: "Tích hợp chủ đề biển đảo, văn hóa, làng nghề địa phương vào hệ thống nhiệm vụ", unit: "gói", qty: 1, price: 15000000, total: 15000000 },
+            { subtotal: "Cộng nhóm C", value: 30000000 },
+
+            { group: "NHÓM D. Mission kit, học liệu trải nghiệm & vật tư (Dự phòng 3 tháng)" },
+            { code: "D", name: "Bộ Mission kit cứng (công cụ STEAM)", desc: "Các công cụ, dụng cụ sử dụng nhiều lần cho góc sáng tạo", unit: "bộ", qty: 1, price: 37500000, total: 37500000 },
+            { code: "D", name: "Vật tư tiêu hao (Dự phòng 3 tháng đầu)", desc: "Nguyên vật liệu tái chế, vật tư thủ công đảm bảo vận hành mở màn không gián đoạn", unit: "gói", qty: 1, price: 25000000, total: 25000000 },
+            { subtotal: "Cộng nhóm D", value: 62500000 },
+
+            { group: "NHÓM E. Setup Không gian, nội thất chuyên dụng & nhận diện" },
+            { code: "E", name: "Thiết kế & Layout không gian chức năng", desc: "Quy hoạch luồng di chuyển và vị trí 5 khu vực trải nghiệm", unit: "gói", qty: 1, price: 20000000, total: 20000000 },
+            { code: "E", name: "Bàn trải nghiệm/hoạt động nhóm đa năng", desc: "Bàn thiết kế linh hoạt cho cả robot và STEAM", unit: "chiếc", qty: 4, price: 8500000, total: 34000000 },
+            { code: "E", name: "Ghế ngồi linh hoạt", desc: "Phù hợp độ tuổi 5-10, dễ dàng xếp gọn", unit: "chiếc", qty: 30, price: 400000, total: 12000000 },
+            { code: "E", name: "Hệ thống tủ storage học liệu", desc: "Tủ phân loại, bảo quản thiết bị, học liệu gọn gàng", unit: "hệ", qty: 1, price: 25000000, total: 25000000 },
+            { code: "E", name: "Bộ nhận diện không gian & bảng biển hướng dẫn", desc: "Hệ thống graphic, chỉ dẫn, quy định các trạm trải nghiệm", unit: "bộ", qty: 1, price: 14000000, total: 14000000 },
+            { subtotal: "Cộng nhóm E", value: 105000000 },
+
+            { group: "NHÓM F. Tăng cường trải nghiệm & hệ thống Gamification" },
+            { code: "F", name: "Hộ chiếu trải nghiệm (Passport)", desc: "Công cụ tracking hành trình của trẻ (Số lượng dự kiến 200 cuốn khởi tạo)", unit: "gói", qty: 1, price: 10000000, total: 10000000 },
+            { code: "F", name: "Hệ thống sticker / dấu mộc / huy hiệu", desc: "Công cụ ghi nhận phần thưởng sau mỗi chặng", unit: "bộ", qty: 1, price: 5000000, total: 5000000 },
+            { code: "F", name: "Bảng thành tích / Bảng nhiệm vụ trung tâm", desc: "Bảng cập nhật tiến độ nhóm và ghi nhận thành quả", unit: "gói", qty: 1, price: 12500000, total: 12500000 },
+            { subtotal: "Cộng nhóm F", value: 27500000 },
+
+            { group: "NHÓM G. Chuyển giao, SOP & đồng hành vận hành" },
+            { code: "G", name: "Đào tạo vận hành mô hình trải nghiệm", desc: "Chuyển giao cho đội triển khai", unit: "khóa", qty: 1, price: 18750000, total: 18750000 },
+            { code: "G", name: "Bộ SOP + template + checklist setup / reset / đón đoàn", desc: "Bộ tài liệu vận hành chuẩn cho trung tâm trải nghiệm", unit: "gói", qty: 1, price: 12500000, total: 12500000 },
+            { code: "G", name: "Gói đồng hành chuyên môn và kỹ thuật 3 tháng đầu", desc: "Hỗ trợ khởi động mô hình, xử lý phát sinh và tối ưu trải nghiệm", unit: "gói", qty: 1, price: 37500000, total: 37500000 },
+            { subtotal: "Cộng nhóm G", value: 68750000 },
+
+            { group: "NHÓM H. Kích hoạt flagship & bộ truyền thông" },
+            { code: "H", name: "Hoạt động khai trương / ngày trải nghiệm mở đầu", desc: "Tổ chức hoạt động kích hoạt mô hình giai đoạn mở đầu", unit: "gói", qty: 1, price: 12500000, total: 12500000 },
+            { code: "H", name: "Bộ tài liệu truyền thông, hình ảnh, nội dung giới thiệu", desc: "Phục vụ công bố mô hình và truyền thông điểm sáng", unit: "gói", qty: 1, price: 10000000, total: 10000000 },
+            { subtotal: "Cộng nhóm H", value: 22500000 }
+        ];
+        const GRAND_TOTAL = 529750000;
+
+        const formatVND = (num) => num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+
+        // ACCORDION LOGIC
+        function toggleAccordion(element) {
+            const parent = element.parentElement;
+            parent.classList.toggle('accordion-active');
+        }
+
+        // POPULATE PRINT TABLE
+        function renderPrintTable() {
+            const tbody = document.getElementById('quote-table-content');
+            if(!tbody) return;
+            let html = `
+                <thead>
+                    <tr>
+                        <th width="5%">STT</th>
+                        <th width="35%">Hạng mục</th>
+                        <th width="25%">Nội dung chi tiết</th>
+                        <th width="5%">ĐVT</th>
+                        <th width="5%">SL</th>
+                        <th width="10%">Đơn giá (VNĐ)</th>
+                        <th width="15%">Thành tiền (VNĐ)</th>
+                    </tr>
+                </thead>
+                <tbody>
+            `;
+
+            let stt = 1;
+            QUOTE_DATA.forEach(row => {
+                if (row.group) {
+                    html += `<tr><td colspan="7" class="quote-group">${row.group}</td></tr>`;
+                    stt = 1; 
+                } else if (row.subtotal) {
+                    html += `<tr><td colspan="6" class="quote-subtotal">${row.subtotal}</td><td class="quote-subtotal">${formatVND(row.value)}</td></tr>`;
+                } else {
+                    html += `
+                        <tr>
+                            <td style="text-align: center;">${stt++}</td>
+                            <td style="font-weight: bold;">${row.name}</td>
+                            <td style="color: #475569; font-size: 10px;">${row.desc}</td>
+                            <td style="text-align: center;">${row.unit}</td>
+                            <td style="text-align: center; font-weight: bold;">${row.qty}</td>
+                            <td style="text-align: right;">${formatVND(row.price)}</td>
+                            <td style="text-align: right; font-weight: bold;">${formatVND(row.total)}</td>
+                        </tr>
+                    `;
+                }
+            });
+            
+            html += `
+                <tr>
+                    <td colspan="6" style="text-align: center; font-weight: 900; font-size: 14px; text-transform: uppercase; background-color: #ea580c; color: white;">TỔNG GIÁ TRỊ ĐỀ XUẤT (VNĐ)</td>
+                    <td style="text-align: right; font-weight: 900; font-size: 14px; background-color: #ea580c; color: white;">${formatVND(GRAND_TOTAL)}</td>
+                </tr>
+                </tbody>
+            `;
+            tbody.innerHTML = html;
+        }
+
+        // INIT LOGIC
+        document.addEventListener('DOMContentLoaded', () => {
+            renderPrintTable();
+            
+            const today = new Date();
+            const dateStr = `Hà Nội, ngày ${today.getDate().toString().padStart(2, '0')} tháng ${(today.getMonth()+1).toString().padStart(2, '0')} năm ${today.getFullYear()}`;
+            document.querySelectorAll('.dynamic-date-text').forEach(el => el.innerText = dateStr);
+        });
+
+        // ADMIN PANEL LOGIC
+        function openAuth() {
+            document.getElementById('auth-overlay').classList.remove('hidden');
+            setTimeout(() => document.getElementById('auth-pass').focus(), 100);
+        }
+
+        function closeAuth() {
+            document.getElementById('auth-overlay').classList.add('hidden');
+            document.getElementById('auth-pass').value = '';
+            document.getElementById('auth-error').classList.add('hidden');
+        }
+
+        document.getElementById('auth-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            if(document.getElementById('auth-pass').value === 'sunbot2026') {
+                closeAuth();
+                document.getElementById('config-panel').classList.add('active');
+            } else {
+                document.getElementById('auth-error').classList.remove('hidden');
+            }
+        });
+
+        function closeConfig() {
+            document.getElementById('config-panel').classList.remove('active');
+        }
+
+        function saveConfig() {
+            const projectName = document.getElementById('cfgProjectName').value || "THƯ VIỆN TỈNH QUẢNG NINH";
+            document.querySelectorAll('.dynamic-project-name').forEach(el => {
+                el.innerText = projectName;
+            });
+            closeConfig();
+        }
+
+        // PRINT DECK LOGIC (Landscape)
+        function printDeck() {
+            document.body.classList.remove('print-mode-quote');
+            document.body.classList.add('print-mode-deck');
+            
+            const style = document.getElementById('dynamic-print-style');
+            style.innerHTML = '@page { size: A4 landscape; margin: 0; }';
+            
+            const projectName = document.getElementById('cfgProjectName') ? document.getElementById('cfgProjectName').value : "THU_VIEN";
+            const safeName = projectName.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '_').toUpperCase();
+            document.title = `DeXuat_Sunbot_${safeName}_Slide`;
+
+            window.print();
+        }
+
+        // PRINT QUOTE LOGIC (Landscape Auto Height)
+        function printQuote() {
+            document.body.classList.remove('print-mode-deck');
+            document.body.classList.add('print-mode-quote');
+            
+            // Set dynamic @page size for Chrome
+            const style = document.getElementById('dynamic-print-style');
+            style.innerHTML = '@page { size: A4 landscape; margin: 0; }';
+            
+            const projectName = document.getElementById('cfgProjectName') ? document.getElementById('cfgProjectName').value : "THU_VIEN";
+            const safeName = projectName.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '_').toUpperCase();
+            document.title = `Bao_Gia_Sunbot_${safeName}`;
+
+            window.print();
+            
+            setTimeout(() => {
+                document.body.classList.remove('print-mode-quote');
+            }, 1000);
+        }
+
+        // Chạy lần đầu
+        document.addEventListener('DOMContentLoaded', () => {
+            document.addEventListener('contextmenu', e => e.preventDefault());
+        });
+    </script>
+</body>
+</html>
