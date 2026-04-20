@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đề Án Không Gian Sáng Tạo Sunbot</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Thư viện SheetJS để xuất chuẩn file .xlsx -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -44,14 +46,18 @@
         }
 
         /* --- CONTROLS --- */
-        .floating-controls { position: fixed; top: 20px; right: 20px; z-index: 100; display: flex; gap: 12px; flex-wrap: wrap; justify-content: flex-end;}
+        .floating-controls { position: fixed; top: 20px; right: 20px; z-index: 100; display: flex; gap: 12px; flex-wrap: wrap; justify-content: flex-end; align-items: center;}
         .btn-action { padding: 10px 20px; border-radius: 12px; font-weight: 800; font-size: 13px; cursor: pointer; transition: all 0.3s; display: inline-flex; align-items: center; gap: 8px; border: none; outline: none; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 10px 20px -5px rgba(0,0,0,0.3);}
         .btn-orange { background: linear-gradient(135deg, #f97316, #ea580c); color: white; }
         .btn-orange:hover { transform: translateY(-2px); box-shadow: 0 15px 25px -5px rgba(234,88,12,0.5); }
+        .btn-green { background: linear-gradient(135deg, #22c55e, #16a34a); color: white; }
+        .btn-green:hover { transform: translateY(-2px); box-shadow: 0 15px 25px -5px rgba(22,163,74,0.5); }
         .btn-slate { background: rgba(30,41,59,0.9); backdrop-filter: blur(10px); color: white; border: 1px solid #475569;}
         .btn-slate:hover { background: #0f172a; border-color: #94a3b8; }
-        .btn-setting { background: #334155; color: white; border: 1px solid #475569; }
-        .btn-setting:hover { background: #475569; }
+        
+        /* Cấu hình nút Admin tàng hình */
+        .btn-setting-stealth { width: 36px; height: 36px; border-radius: 50%; background: transparent; color: rgba(148, 163, 184, 0.5); border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s; outline: none; font-size: 18px;}
+        .btn-setting-stealth:hover { color: white; transform: rotate(90deg); background: rgba(30,41,59,0.8); }
 
         /* --- DECK STRUCTURE --- */
         .deck-wrapper { display: flex; flex-direction: column; align-items: center; gap: 40px; padding: 100px 20px 40px 20px; width: 100%; }
@@ -148,7 +154,7 @@
         }
     </style>
 </head>
-<body class="no-select mode-public"> 
+<body class="no-select">
 
     <!-- THẺ STYLE DYNAMIC CHO CHẾ ĐỘ IN SẼ ĐƯỢC JS NHÚNG VÀO ĐÂY -->
     <style id="dynamic-print-style"></style>
@@ -165,8 +171,8 @@
                     <p id="auth-error" class="text-red-400 text-[12px] font-bold mt-2 hidden">Mã bảo mật không đúng!</p>
                 </div>
                 <div class="flex gap-3">
-                    <button type="button" onclick="closeAuth()" class="flex-1 bg-slate-800 text-slate-300 font-bold py-4 rounded-xl">Hủy</button>
-                    <button type="submit" class="flex-1 bg-orange-600 text-white font-bold py-4 rounded-xl">Xác Nhận</button>
+                    <button type="button" onclick="closeAuth()" class="flex-1 bg-slate-800 text-slate-300 font-bold py-4 rounded-xl outline-none hover:bg-slate-700 transition-colors">Hủy</button>
+                    <button type="submit" class="flex-1 bg-orange-600 text-white font-bold py-4 rounded-xl outline-none hover:bg-orange-500 transition-colors shadow-lg">Xác Nhận</button>
                 </div>
             </form>
         </div>
@@ -187,9 +193,11 @@
 
     <!-- FLOATING CONTROLS -->
     <div class="floating-controls no-print">
-        <button onclick="openAuth()" class="btn-action btn-setting">
-            ⚙️ Cấu Hình Đề Án
+        <!-- Nút Cấu Hình Ẩn Danh -->
+        <button onclick="openAuth()" class="btn-setting-stealth" title="Cấu hình hệ thống">
+            ⚙️
         </button>
+        
         <a href="https://sunbotvietnam.github.io/portal/profile/" target="_blank" class="btn-action btn-slate">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
             Hồ Sơ Năng Lực
@@ -201,6 +209,10 @@
         <button onclick="printQuote()" class="btn-action btn-slate">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
             In Báo Giá A4 (Ngang)
+        </button>
+        <button onclick="exportExcel()" class="btn-action btn-green">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Tải File Excel (.xlsx)
         </button>
     </div>
 
@@ -272,10 +284,10 @@
                     <div class="card-3d-red flex flex-col items-start !p-8">
                         <div class="w-14 h-14 bg-red-500/20 text-red-500 rounded-full flex items-center justify-center text-2xl mb-4 border border-red-500/30">📉</div>
                         <h3 class="text-[16px] font-black text-white uppercase mb-3">Thực Trạng Bạn Đọc</h3>
-                        <p class="text-[14px] text-slate-300 leading-relaxed mb-2">Nhưng lượng bạn đọc tiếp cận lại rất lèo tèo:</p>
+                        <p class="text-[14px] text-slate-300 leading-relaxed mb-2">Nhưng lượng bạn đọc tiếp cận lại rất khiêm tốn:</p>
                         <ul class="text-[13px] text-red-100 leading-relaxed mb-0 space-y-1 list-disc pl-4 marker:text-red-400/50">
                             <li><strong class="text-white">Bạn đọc:</strong> 2.500 - 3.000 người/năm</li>
-                            <li><strong class="text-white">Trẻ 5-10 tuổi:</strong> Chỉ 38% (Năm 2025: 889 thẻ)</li>
+                            <li><strong class="text-white">Trẻ 5-10 tuổi:</strong> Chỉ chiếm 38% (Năm 2025: 889 thẻ)</li>
                         </ul>
                     </div>
                     <div class="card-3d-orange flex flex-col items-start !p-8 transform scale-105 z-10 shadow-xl">
@@ -499,7 +511,7 @@
                     </div>
                     <div class="card-3d !p-4 flex flex-col items-center text-center justify-center border-t-4 border-teal-500">
                         <div class="text-3xl mb-3">📚</div>
-                        <p class="font-bold text-white text-[13px] uppercase">Khu khám phá<br>& đọc sách</p>
+                        <p class="font-bold text-white text-[13px] uppercase">Khu khám phá<br>tri thức</p>
                     </div>
                     <div class="card-3d !p-4 flex flex-col items-center text-center justify-center border-t-4 border-amber-500">
                         <div class="text-3xl mb-3">📸</div>
@@ -509,7 +521,7 @@
 
                 <div class="mt-10 bg-slate-800/80 border border-slate-700 p-6 rounded-2xl shadow-lg flex items-center justify-center">
                     <p class="text-[15px] font-medium text-slate-300 text-center m-0 max-w-3xl leading-relaxed">
-                        Thiết kế modulable cho phép các khu vực dễ dàng biến đổi công năng. Sáng làm nơi đón đoàn học sinh trải nghiệm, chiều trở thành khu vực workshop mở cho khách vãng lai, tối ưu hóa công suất sử dụng mặt bằng thư viện.
+                        Thiết kế modulable cho phép các khu vực dễ dàng biến đổi công năng. Sáng làm nơi đón đoàn học sinh trải nghiệm, chiều trở thành khu vực workshop mở cho khách vãng lai, tối ưu hóa công suất sử dụng không gian thư viện.
                     </p>
                 </div>
             </div>
@@ -537,7 +549,7 @@
                         <ul class="text-[13px] text-slate-400 space-y-2 list-disc pl-4 marker:text-orange-500">
                             <li>Robot thông minh</li>
                             <li>Hệ Bản đồ sa bàn (Map)</li>
-                            <li>Thẻ lệnh điều khiển</li>
+                            <li>Công cụ điều phối & Thẻ lệnh</li>
                         </ul>
                     </div>
                     <!-- 2 -->
@@ -556,7 +568,7 @@
                         <ul class="text-[13px] text-slate-300 space-y-2 list-disc pl-4 marker:text-blue-400 font-medium">
                             <li>Chủ đề Biển đảo Tổ quốc</li>
                             <li>Chủ đề Làng nghề Văn hóa</li>
-                            <li>Hỗ trợ truyền thông địa phương</li>
+                            <li>...và nhiều chủ đề mở rộng khác</li>
                         </ul>
                     </div>
                     <!-- 4 -->
@@ -671,7 +683,7 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div class="bg-slate-800 p-8 rounded-2xl border-t-4 border-blue-500 shadow-md">
-                        <h3 class="text-lg font-black text-blue-400 uppercase mb-4 text-center">Đối với Đơn vị</h3>
+                        <h3 class="text-lg font-black text-blue-400 uppercase mb-4 text-center">Đối với Đơn vị (Thư viện)</h3>
                         <ul class="text-[14px] text-slate-300 space-y-3 list-disc pl-5">
                             <li>Tăng vọt lượng bạn đọc thiếu nhi.</li>
                             <li>Tăng tần suất hoạt động sôi nổi.</li>
@@ -718,7 +730,7 @@
                 <div class="bg-slate-800/80 backdrop-blur-md p-10 rounded-3xl border border-slate-700 shadow-2xl max-w-4xl mx-auto w-full text-center">
                     <p class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-2">Tổng giá trị đề xuất</p>
                     <h3 class="text-5xl md:text-[64px] font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-yellow-300 mb-8 drop-shadow-md">
-                        ~ 500.000.000 VNĐ
+                        ~ 521.750.000 VNĐ
                     </h3>
                     
                     <div class="w-full border-t border-slate-700 my-8 relative">
@@ -759,7 +771,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
                     <div class="card-3d !p-8">
                         <div class="text-3xl mb-4">📚</div>
-                        <p class="font-bold text-white text-[15px] leading-relaxed">Mở rộng sang các thư viện vệ tinh khác trong tỉnh.</p>
+                        <p class="font-bold text-white text-[15px] leading-relaxed">Mở rộng sang các thư viện vệ tinh khác trong khu vực.</p>
                     </div>
                     <div class="card-3d !p-8">
                         <div class="text-3xl mb-4">🏢</div>
@@ -818,7 +830,6 @@
 
         <!-- Accordion Q&A -->
         <div class="space-y-3">
-            <!-- Q1 -->
             <div class="accordion-item accordion-active">
                 <div class="accordion-header" onclick="toggleAccordion(this)">
                     <span>1. Không gian này được thiết kế dành cho đối tượng nào?</span>
@@ -837,7 +848,6 @@
                 </div>
             </div>
 
-            <!-- Q2 -->
             <div class="accordion-item">
                 <div class="accordion-header" onclick="toggleAccordion(this)">
                     <span>2. Trẻ sẽ làm gì khi tham gia trải nghiệm?</span>
@@ -857,7 +867,6 @@
                 </div>
             </div>
 
-            <!-- Q3 -->
             <div class="accordion-item">
                 <div class="accordion-header" onclick="toggleAccordion(this)">
                     <span>3. Giải pháp này có phù hợp với môi trường dự án không?</span>
@@ -876,7 +885,6 @@
                 </div>
             </div>
 
-            <!-- Q4 -->
             <div class="accordion-item">
                 <div class="accordion-header" onclick="toggleAccordion(this)">
                     <span>4. Không gian này vận hành theo hình thức nào?</span>
@@ -896,7 +904,6 @@
                 </div>
             </div>
 
-            <!-- Q5 -->
             <div class="accordion-item">
                 <div class="accordion-header" onclick="toggleAccordion(this)">
                     <span>5. Việc tổ chức hoạt động có phức tạp không?</span>
@@ -916,7 +923,6 @@
                 </div>
             </div>
 
-            <!-- Q6 -->
             <div class="accordion-item">
                 <div class="accordion-header" onclick="toggleAccordion(this)">
                     <span>6. Không gian có thể vận hành ngay sau khi bàn giao không?</span>
@@ -936,7 +942,6 @@
                 </div>
             </div>
 
-            <!-- Q7 -->
             <div class="accordion-item">
                 <div class="accordion-header" onclick="toggleAccordion(this)">
                     <span>7. Không gian có đảm bảo duy trì hoạt động liên tục không?</span>
@@ -955,7 +960,6 @@
                 </div>
             </div>
 
-            <!-- Q8 -->
             <div class="accordion-item">
                 <div class="accordion-header" onclick="toggleAccordion(this)">
                     <span>8. Vai trò của robot trong không gian này là gì?</span>
@@ -974,7 +978,6 @@
                 </div>
             </div>
 
-            <!-- Q9 -->
             <div class="accordion-item">
                 <div class="accordion-header" onclick="toggleAccordion(this)">
                     <span>9. Điểm khác biệt của giải pháp này là gì?</span>
@@ -993,7 +996,6 @@
                 </div>
             </div>
 
-            <!-- Q10 -->
             <div class="accordion-item">
                 <div class="accordion-header" onclick="toggleAccordion(this)">
                     <span>10. Không gian có thể phát triển thêm trong tương lai không?</span>
@@ -1012,7 +1014,6 @@
                 </div>
             </div>
 
-            <!-- Q11 -->
             <div class="accordion-item">
                 <div class="accordion-header" onclick="toggleAccordion(this)">
                     <span>11. Dự án này mang lại giá trị gì cho Đơn vị?</span>
@@ -1032,7 +1033,6 @@
                 </div>
             </div>
 
-            <!-- Q12 -->
             <div class="accordion-item">
                 <div class="accordion-header" onclick="toggleAccordion(this)">
                     <span>12. Dự án này mang lại giá trị gì cho trẻ em?</span>
@@ -1052,7 +1052,6 @@
                 </div>
             </div>
 
-            <!-- Q13 -->
             <div class="accordion-item">
                 <div class="accordion-header" onclick="toggleAccordion(this)">
                     <span>13. Mô hình này có thể trở thành điểm sáng của địa phương không?</span>
@@ -1091,8 +1090,8 @@
         
         <div style="font-size: 11px; margin-bottom: 15px; border: 1px solid #cbd5e1; padding: 10px; border-radius: 4px;">
             <p style="margin: 0 0 4px 0;"><strong>Đơn vị đề xuất:</strong> Công ty Cổ phần Công nghệ Giáo dục Kiro Việt Nam</p>
-            <p style="margin: 0 0 4px 0;"><strong>Phạm vi:</strong> Không gian trải nghiệm dành cho trẻ 5–10 tuổi, vận hành theo mô hình trải nghiệm tại thư viện</p>
-            <p style="margin: 0;"><strong>Ghi chú:</strong> Bảng giá theo format chủ đầu tư; cấu trúc gói đã tối ưu cho không gian thư viện, 3 tháng demo không bổ sung vật tư</p>
+            <p style="margin: 0 0 4px 0;"><strong>Phạm vi:</strong> Không gian trải nghiệm dành cho trẻ 5–10 tuổi, vận hành theo mô hình trải nghiệm tại đơn vị</p>
+            <p style="margin: 0;"><strong>Ghi chú:</strong> Bảng giá theo format chủ đầu tư; cấu trúc gói đã tối ưu cho không gian trải nghiệm, 3 tháng demo không bổ sung vật tư</p>
         </div>
 
         <table class="quote-table" id="quote-table-content">
@@ -1108,34 +1107,32 @@
             <div style="width: 300px;">
                 <p style="margin-bottom: 10px;"><span class="dynamic-date-text italic text-slate-600">Hà Nội, ngày ... tháng ... năm ...</span></p>
                 <p style="font-weight: bold; margin-bottom: 60px; text-transform: uppercase;">CÔNG TY CP CÔNG NGHỆ GIÁO DỤC KIRO VIỆT NAM</p>
-                <p>(Ký, đóng dấu và ghi rõ họ tên)</p>
             </div>
         </div>
     </div>
 
     <!-- JAVASCRIPT LOGIC -->
     <script>
-        // DATA BÁO GIÁ CHI TIẾT (Bóc tách từ file CSV 529.750.000)
+        // DATA BÁO GIÁ CHI TIẾT (Khớp 100% File PDF mới tải lên - Tổng 521.750.000)
         const QUOTE_DATA = [
             { group: "NHÓM A. Thiết bị lõi Sunbot & điều phối trải nghiệm" },
-            { code: "A", name: "Robot Sunbot", desc: "Robot tương tác sử dụng cho các trạm nhiệm vụ và hoạt động nhóm", unit: "bộ", qty: 10, price: 5750000, total: 57500000 },
+            { code: "A", name: "Robot Sunbot (Bảo hành onsite 36 tháng)", desc: "Robot tương tác sử dụng cho các trạm nhiệm vụ và hoạt động nhóm", unit: "bộ", qty: 10, price: 5750000, total: 57500000 },
             { code: "A", name: "Bản đồ robot chuẩn bản bền", desc: "Bản đồ trải nghiệm chất liệu bền, phù hợp cường độ sử dụng", unit: "bộ", qty: 8, price: 750000, total: 6000000 },
             { code: "A", name: "Bộ chướng ngại vật Sunbot chuẩn", desc: "Bộ vật cản và phụ kiện tạo nhiệm vụ đa cấp độ", unit: "bộ", qty: 6, price: 1875000, total: 11250000 },
-            { code: "A", name: "Bộ thẻ lệnh, thẻ đích, flashcard, mission card", desc: "Bộ công cụ điều phối nhiệm vụ và hoạt động theo nhóm", unit: "gói", qty: 1, price: 5000000, total: 5000000 },
-            { code: "A", name: "Android Box", desc: "Thiết bị hỗ trợ kết nối và trình chiếu", unit: "bộ", qty: 1, price: 1500000, total: 1500000 },
-            { code: "A", name: "Tablet điều phối", desc: "Thiết bị di động dành cho người điều phối không gian", unit: "chiếc", qty: 1, price: 8500000, total: 8500000 },
-            { code: "A", name: "Màn hình tương tác thông minh 65 Inch", desc: "Màn hình hiển thị trung tâm kèm khung di động", unit: "chiếc", qty: 1, price: 40000000, total: 40000000 },
-            { subtotal: "Cộng nhóm A", value: 129750000 },
+            { code: "A", name: "Bộ công cụ điều phối nhiệm vụ và hoạt động theo nhóm", desc: "Bộ thẻ lệnh, thẻ đích, flashcard, mission card", unit: "gói", qty: 1, price: 5000000, total: 5000000 },
+            { code: "A", name: "Thiết bị hỗ trợ kết nối và trình chiếu", desc: "Android Box chuyên dụng", unit: "bộ", qty: 1, price: 2000000, total: 2000000 },
+            { code: "A", name: "Màn hình tương tác thực thụ", desc: "Màn hình hiển thị trung tâm kèm khung di động", unit: "chiếc", qty: 1, price: 50000000, total: 50000000 },
+            { subtotal: "Cộng nhóm A", value: 131750000 },
             
             { group: "NHÓM B. Nội dung số, bản quyền phần mềm & học liệu nền" },
-            { code: "B", name: "Bản quyền phần mềm & hệ thống giáo án số (3 năm)", desc: "Cấp quyền sử dụng phần mềm Sunbot và học liệu số định danh", unit: "gói", qty: 1, price: 45000000, total: 45000000 },
+            { code: "B", name: "Bản quyền phần mềm & hệ thống giáo án số (3 năm)", desc: "Cấp quyền sử dụng phần mềm Sunbot và học liệu số định danh", unit: "gói", qty: 1, price: 30000000, total: 30000000 },
             { code: "B", name: "Sunbot Camp (18 bài)", desc: "Bộ nội dung trải nghiệm chuẩn hóa theo mô hình workshop/trạm", unit: "gói", qty: 1, price: 25000000, total: 25000000 },
-            { code: "B", name: "Thư viện âm nhạc & hình hiệu Sunbot", desc: "Tài nguyên số để tạo hiệu ứng âm thanh, hình ảnh cho không gian", unit: "gói", qty: 1, price: 13750000, total: 13750000 },
-            { subtotal: "Cộng nhóm B", value: 83750000 },
+            { code: "B", name: "Tài nguyên số & học liệu nền bổ trợ", desc: "Hệ thống tài nguyên số bổ trợ hoạt động trải nghiệm tại không gian", unit: "gói", qty: 1, price: 18750000, total: 18750000 },
+            { subtotal: "Cộng nhóm B", value: 73750000 },
 
             { group: "NHÓM C. Gói nội dung đặc thù bản địa hóa" },
             { code: "C", name: "Bản đồ hành trình địa phương", desc: "Bản đồ trải nghiệm thiết kế riêng với các địa danh, di sản bản địa", unit: "gói", qty: 1, price: 15000000, total: 15000000 },
-            { code: "C", name: "Kịch bản trải nghiệm bản địa hóa", desc: "Tích hợp chủ đề biển đảo, văn hóa, làng nghề địa phương vào hệ thống nhiệm vụ", unit: "gói", qty: 1, price: 15000000, total: 15000000 },
+            { code: "C", name: "Kịch bản trải nghiệm bản địa hóa", desc: "Tích hợp chủ đề biển đảo, văn hóa, làng nghề... và nhiều chủ đề mở rộng khác", unit: "gói", qty: 1, price: 15000000, total: 15000000 },
             { subtotal: "Cộng nhóm C", value: 30000000 },
 
             { group: "NHÓM D. Mission kit, học liệu trải nghiệm & vật tư (Dự phòng 3 tháng)" },
@@ -1168,7 +1165,7 @@
             { code: "H", name: "Bộ tài liệu truyền thông, hình ảnh, nội dung giới thiệu", desc: "Phục vụ công bố mô hình và truyền thông điểm sáng", unit: "gói", qty: 1, price: 10000000, total: 10000000 },
             { subtotal: "Cộng nhóm H", value: 22500000 }
         ];
-        const GRAND_TOTAL = 529750000;
+        const GRAND_TOTAL = 521750000;
 
         const formatVND = (num) => num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 
@@ -1307,10 +1304,76 @@
             }, 1000);
         }
 
-        // Chạy lần đầu
-        document.addEventListener('DOMContentLoaded', () => {
-            document.addEventListener('contextmenu', e => e.preventDefault());
-        });
+        // EXPORT EXCEL (XLSX via SheetJS)
+        function exportExcel() {
+            const projectName = document.getElementById('cfgProjectName') ? document.getElementById('cfgProjectName').value : "THƯ VIỆN TỈNH QUẢNG NINH";
+
+            // Khởi tạo mảng dữ liệu 2 chiều
+            let ws_data = [];
+            
+            // --- Tiêu đề & Thông tin chung ---
+            ws_data.push(["BẢNG GIÁ ĐỀ XUẤT"]);
+            ws_data.push([`Giải pháp Không gian Trải nghiệm Sáng tạo Sunbot tại ${projectName}`]);
+            ws_data.push([]);
+            ws_data.push(["Đơn vị đề xuất", "Công ty Cổ phần Công nghệ Giáo dục Kiro Việt Nam"]);
+            ws_data.push(["Phạm vi", "Không gian trải nghiệm dành cho trẻ 5–10 tuổi, vận hành theo mô hình trải nghiệm tại thư viện"]);
+            ws_data.push(["Ghi chú", "Bảng giá theo format chủ đầu tư; cấu trúc gói đã tối ưu cho không gian thư viện, 3 tháng demo không bổ sung vật tư"]);
+            ws_data.push([]);
+            
+            // --- Header bảng ---
+            ws_data.push(["STT", "Mã nhóm", "Hạng mục", "Nội dung chi tiết / cấu phần", "ĐVT", "SL", "Đơn giá", "Thành tiền"]);
+
+            let stt = 1;
+            let currentGroupCode = "";
+
+            QUOTE_DATA.forEach(row => {
+                if (row.group) {
+                    ws_data.push([row.group]); // Dòng Header Nhóm
+                    const match = row.group.match(/NHÓM ([A-Z])/);
+                    if (match) currentGroupCode = match[1];
+                    stt = 1;
+                } else if (row.subtotal) {
+                    ws_data.push(["", "", "", "", "", "", row.subtotal, row.value]);
+                } else {
+                    ws_data.push([
+                        stt++,
+                        currentGroupCode,
+                        row.name,
+                        row.desc,
+                        row.unit,
+                        row.qty,
+                        row.price,
+                        row.total
+                    ]);
+                }
+            });
+
+            ws_data.push([]);
+            ws_data.push(["", "", "", "", "", "", "TỔNG GIÁ TRỊ ĐỀ XUẤT", GRAND_TOTAL]);
+
+            // Tạo Workbook & Worksheet
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet(ws_data);
+
+            // Chỉnh độ rộng cột cho đẹp
+            const wscols = [
+                {wCH: 5},  // STT
+                {wCH: 10}, // Mã nhóm
+                {wCH: 40}, // Hạng mục
+                {wCH: 50}, // Nội dung chi tiết
+                {wCH: 10}, // ĐVT
+                {wCH: 5},  // SL
+                {wCH: 15}, // Đơn giá
+                {wCH: 15}  // Thành tiền
+            ];
+            ws['!cols'] = wscols;
+
+            XLSX.utils.book_append_sheet(wb, ws, "Bao_Gia");
+
+            // Xuất file
+            const safeName = projectName.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '_').toUpperCase();
+            XLSX.writeFile(wb, `Bao_Gia_Sunbot_${safeName}.xlsx`);
+        }
     </script>
 </body>
 </html>
