@@ -68,7 +68,7 @@
         }
         @keyframes pulse-light { 0% { opacity: 0.7; } 100% { opacity: 1; } }
 
-        /* Cốc Thủy Tinh Thực Tế */
+        /* Cốc Thủy Tinh Thực Tế & Bọt Nước */
         .glass-cup {
             background: linear-gradient(to right, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.6) 20%, rgba(255,255,255,0.1) 100%);
             border: 3px solid rgba(255, 255, 255, 0.9);
@@ -83,6 +83,20 @@
         .water-fill {
             transition: all 1.2s ease-in-out;
             border-radius: 0 0 10px 10px;
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+        }
+        
+        /* Hiệu ứng bọt nước sủi lên */
+        .water-bubbles {
+            background-image: radial-gradient(circle, rgba(255, 255, 255, 0.4) 2px, transparent 3px);
+            background-size: 15px 25px;
+            animation: bubble-rise 4s linear infinite;
+        }
+        @keyframes bubble-rise {
+            from { background-position: 0 0; }
+            to { background-position: 0 -100px; }
         }
     </style>
 </head>
@@ -107,9 +121,9 @@
         <div class="relative w-full h-full bg-white rounded-3xl shadow-2xl overflow-hidden border-4 border-white">
             <img src="assets/img/nui-da.png" 
                  alt="Khung cảnh núi đá" class="w-full h-full object-cover absolute inset-0 z-0" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?q=80&w=2000&auto=format&fit=crop'">
-            <div class="absolute inset-0 bg-blue-900/10 z-0"></div>
+            <div class="absolute inset-0 bg-blue-900/10 z-0 pointer-events-none"></div>
 
-            <!-- 6 ĐIỂM CHẠM A B C D E F -->
+            <!-- 6 ĐIỂM CHẠM A B C D E F (Giữ nguyên vị trí của bạn) -->
             <div id="hotspots-container" class="absolute inset-0 z-20">
                 <button onclick="openPopup('A')" class="absolute top-[5%] left-[40%] group">
                     <span class="absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75 hotspot-ping"></span>
@@ -161,27 +175,18 @@
     <!-- BÊN PHẢI: BẢNG ĐIỀU KHIỂN -->
     <aside class="w-1/3 h-full bg-white shadow-[-10px_0_30px_-15px_rgba(0,0,0,0.1)] flex flex-col z-30 relative border-l-4 border-orange-100">
         
-        <div class="p-6 border-b border-orange-100 flex items-center justify-between bg-orange-50/80">
-            <div class="flex items-center gap-4">
-                <div class="w-14 h-14 bg-white rounded-xl border-2 border-orange-200 flex items-center justify-center shadow-md p-1">
-                    <img src="assets/img/logo-sunbot-1.png" alt="Sunbot Logo" class="w-full h-full object-contain" onerror="this.onerror=null; this.src='https://via.placeholder.com/48x48/fff7ed/ea580c?text=SB'">
-                </div>
-                <div>
-                    <h2 class="text-xl font-black text-slate-800">Trợ giảng Sunbot</h2>
-                    <p class="text-sm font-semibold text-orange-500">Bài 2: Hệ Sinh Thái Biển</p>
-                </div>
+        <!-- HEADER MỚI: Tích hợp Logo và Tiêu đề bài học gọn gàng -->
+        <div class="p-5 border-b-4 border-orange-100 flex items-center gap-4 bg-gradient-to-r from-orange-50 to-amber-50">
+            <div class="w-16 h-16 bg-white rounded-2xl border-2 border-orange-200 flex items-center justify-center shadow-md p-1 flex-shrink-0">
+                <img src="assets/img/logo-sunbot-1.png" alt="Sunbot Logo" class="w-full h-full object-contain" onerror="this.onerror=null; this.src='https://via.placeholder.com/64x64/fff7ed/ea580c?text=SB'">
+            </div>
+            <div>
+                <p class="text-xs font-bold text-orange-500 uppercase tracking-wider mb-1">Bài 2: Hệ Sinh Thái Biển</p>
+                <h1 class="text-2xl font-black text-slate-800 leading-tight">Nước Biển & Màu Sắc</h1>
             </div>
         </div>
 
         <div class="flex-1 flex flex-col overflow-y-auto p-6">
-            
-            <!-- TIÊU ĐỀ BÀI HỌC -->
-            <div class="mb-6 bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-100 rounded-2xl p-5 text-center shadow-sm relative overflow-hidden">
-                <div class="absolute -right-2 -top-2 opacity-10 text-6xl">🌊</div>
-                <h1 class="text-2xl font-black text-slate-800 uppercase tracking-wide mb-1 relative z-10">Nước Biển & Màu Sắc</h1>
-                <p class="text-base font-bold text-blue-600 relative z-10">Vì sao nước biển có màu xanh?</p>
-            </div>
-
             <div class="mb-8 flex-1">
                 <h3 class="flex items-center gap-2 text-lg font-bold text-slate-800 mb-4 uppercase tracking-wider">
                     <i data-lucide="message-circle-question" class="w-6 h-6 text-orange-500"></i> Câu hỏi Gợi mở
@@ -261,13 +266,13 @@
         </div>
     </aside>
 
-    <!-- MÀN HÌNH TỔNG QUAN BÀI HỌC (LIGHTBOX VIEWER) -->
+    <!-- MÀN HÌNH TỔNG QUAN BÀI HỌC (LIGHTBOX HIỂN THỊ ẢNH PLATE-2 FULL TỶ LỆ) -->
     <div id="overview-modal" class="hidden fixed inset-0 z-[70] bg-slate-900/95 backdrop-blur-md flex items-center justify-center p-4 sm:p-8">
         <div class="relative w-full h-full flex items-center justify-center modal-enter" id="overview-content">
             <button onclick="closeOverview()" class="absolute top-2 right-2 md:top-4 md:right-4 z-50 bg-red-500 hover:bg-red-600 text-white rounded-full p-3 shadow-[0_0_15px_rgba(239,68,68,0.5)] transition-transform hover:scale-110 border-2 border-white">
                 <i data-lucide="x" class="w-8 h-8"></i>
             </button>
-            <img src="assets/img/plate-2.jpg" alt="Tổng quan bài học" class="max-w-full max-h-full rounded-2xl shadow-[0_0_50px_rgba(0,0,0,0.8)] border-4 border-white/20 object-contain" onerror="this.onerror=null; this.src='https://via.placeholder.com/1920x1080/1e293b/fff?text=Chua+co+anh+plate-2.jpg'">
+            <img src="assets/img/plate-2.jpg" alt="Tổng quan bài học" class="max-w-[95vw] max-h-[85vh] rounded-2xl shadow-[0_0_50px_rgba(0,0,0,0.8)] border-8 border-white object-contain mx-auto" onerror="this.onerror=null; this.src='https://via.placeholder.com/1920x1080/1e293b/fff?text=Chua+co+anh+plate-2.jpg'">
         </div>
     </div>
 
@@ -294,39 +299,44 @@
                         👆 Chạm vào Sunbot để bật đèn pin nhé!
                     </div>
 
-                    <!-- Thông báo kiến thức nảy ra khi bật đèn -->
-                    <div id="practice-result" class="absolute top-4 left-4 bg-blue-100 text-blue-800 p-4 rounded-xl border-l-8 border-blue-600 shadow-lg z-30 opacity-0 scale-95 transition-all duration-500 max-w-sm">
-                        <p class="font-black text-xl mb-1">💡 BẠN THẤY CHƯA?</p>
-                        <p class="font-semibold text-sm">Ánh sáng chiếu vào cốc sâu (cốc 3) đã bị nước hấp thụ rất nhiều, làm nước có màu xanh tối thẫm lại!</p>
-                    </div>
-
                     <!-- Tia sáng của đèn pin (Ẩn mặc định) -->
                     <div id="flashlight-beam" class="hidden absolute top-[130px] right-[85px] w-[140%] h-[400px] light-beam z-10 pointer-events-none -rotate-[22deg]"></div>
 
-                    <!-- 3 CỐC THỦY TINH TRỰC QUAN -->
-                    <div class="flex gap-8 items-end justify-center h-64 w-full z-20 pb-4">
-                        <div class="flex flex-col items-center gap-3">
+                    <!-- 3 CỐC THỦY TINH TRỰC QUAN VỚI BỌT NƯỚC SỦI -->
+                    <div class="flex gap-8 items-end justify-center h-64 w-full z-20 pb-4 relative">
+                        
+                        <!-- Cốc 1 -->
+                        <div class="flex flex-col items-center gap-3 relative">
+                            <!-- Nhãn động -->
+                            <div class="cup-label hidden absolute -top-10 bg-white text-blue-600 px-3 py-1 rounded-lg font-bold text-sm shadow-md border border-blue-200 whitespace-nowrap z-30 animate-bounce">Sáng rõ ✨</div>
                             <div class="glass-cup w-24 h-24">
-                                <div id="cup-1" class="absolute bottom-0 w-full h-1/3 bg-blue-200 water-fill"></div>
+                                <div id="cup-1" class="water-fill h-1/3 bg-blue-200 water-bubbles"></div>
                             </div>
                             <span class="font-bold text-slate-600 bg-white px-4 py-1 rounded-full shadow-sm border border-slate-200">Cạn</span>
                         </div>
-                        <div class="flex flex-col items-center gap-3">
+                        
+                        <!-- Cốc 2 -->
+                        <div class="flex flex-col items-center gap-3 relative">
+                            <div class="cup-label hidden absolute -top-10 bg-white text-blue-800 px-3 py-1 rounded-lg font-bold text-sm shadow-md border border-blue-300 whitespace-nowrap z-30 animate-bounce" style="animation-delay: 0.2s">Mờ dần 💧</div>
                             <div class="glass-cup w-24 h-32">
-                                <div id="cup-2" class="absolute bottom-0 w-full h-2/3 bg-blue-300 water-fill"></div>
+                                <div id="cup-2" class="water-fill h-2/3 bg-blue-400 water-bubbles"></div>
                             </div>
                             <span class="font-bold text-slate-600 bg-white px-4 py-1 rounded-full shadow-sm border border-slate-200">Vừa</span>
                         </div>
-                        <div class="flex flex-col items-center gap-3">
+                        
+                        <!-- Cốc 3 -->
+                        <div class="flex flex-col items-center gap-3 relative">
+                            <div class="cup-label hidden absolute -top-10 bg-slate-800 text-white px-3 py-1 rounded-lg font-bold text-sm shadow-md border border-slate-600 whitespace-nowrap z-30 animate-bounce" style="animation-delay: 0.4s">Tối thẫm 🌌</div>
                             <div class="glass-cup w-24 h-48">
-                                <div id="cup-3" class="absolute bottom-0 w-full h-full bg-blue-500 water-fill"></div>
+                                <div id="cup-3" class="water-fill h-full bg-blue-700 water-bubbles"></div>
                             </div>
                             <span class="font-bold text-slate-600 bg-white px-4 py-1 rounded-full shadow-sm border border-slate-200">Sâu</span>
                         </div>
                     </div>
                     
-                    <!-- LOGO SUNBOT SOI ĐÈN -->
-                    <div class="absolute top-12 right-12 flex flex-col items-center animate-bounce z-40 cursor-pointer hover:scale-110 transition-transform" onclick="toggleFlashlight()">
+                    <!-- LOGO SUNBOT SOI ĐÈN (Cho phép bấm) -->
+                    <div class="absolute top-12 right-12 flex flex-col items-center z-40 cursor-pointer hover:scale-110 transition-transform" onclick="toggleFlashlight()">
+                        <i data-lucide="pointer" id="hand-pointer" class="absolute -bottom-6 -left-4 w-10 h-10 text-orange-500 animate-bounce z-50 drop-shadow-md"></i>
                         <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-[0_10px_25px_rgba(234,88,12,0.4)] border-4 border-orange-400 p-2">
                             <img src="assets/img/logo-sunbot-1.png" alt="Sunbot" class="w-full h-full object-contain" onerror="this.onerror=null; this.src='https://via.placeholder.com/64x64/fff7ed/ea580c?text=SB'">
                         </div>
@@ -358,7 +368,6 @@
         <div class="w-11/12 h-5/6 rounded-3xl flex flex-col relative modal-enter" id="game-hub-content">
             <button onclick="closeGameHub()" class="absolute top-0 right-0 bg-red-500 hover:bg-red-600 rounded-full p-4 transition shadow-md border-4 border-white z-20 hover:scale-110 flex items-center justify-center group">
                 <i data-lucide="x" class="w-8 h-8 text-white"></i>
-                <span class="absolute -bottom-8 bg-white text-red-600 font-bold px-3 py-1 rounded-full text-sm shadow-md opacity-0 group-hover:opacity-100 transition whitespace-nowrap">Đóng</span>
             </button>
             <div class="text-center mb-8 mt-10">
                 <h2 class="text-5xl font-black text-yellow-300 drop-shadow-lg uppercase tracking-widest">Khu Vui Chơi Sunbot</h2>
@@ -432,6 +441,7 @@
 
             <div id="game-result" class="hidden absolute inset-0 bg-orange-900/95 backdrop-blur-md z-30 flex flex-col items-center justify-center overflow-hidden">
                 <div id="fireworks-container" class="absolute inset-0 pointer-events-none z-10"></div>
+
                 <div id="result-icon" class="text-9xl mb-4 animate-bounce z-20">🏆</div>
                 <h2 id="result-title" class="text-6xl font-black text-yellow-400 mb-8 drop-shadow-lg text-center uppercase tracking-wider z-20">Tuyệt vời!<br>Bạn làm tốt lắm!</h2>
                 
@@ -440,7 +450,7 @@
                 </div>
             </div>
 
-            <!-- MÀN HÌNH TỔNG KẾT TRẮC NGHIỆM -->
+            <!-- MÀN HÌNH TỔNG KẾT ĐẶC BIỆT CHO TRẮC NGHIỆM -->
             <div id="quiz-summary-result" class="hidden absolute inset-0 bg-blue-900/95 backdrop-blur-md z-30 flex flex-col items-center justify-center overflow-hidden">
                 <div id="quiz-fireworks" class="absolute inset-0 pointer-events-none z-10"></div>
                 <div class="bg-white p-8 rounded-3xl shadow-2xl z-20 max-w-3xl w-full text-center border-8 border-orange-200">
@@ -557,7 +567,6 @@
                         document.removeEventListener(evt, startAudioEnvironment);
                     });
                 }).catch(e => {
-                    console.log("Waiting for user interaction to play music...");
                     hasInteracted = false; 
                 });
             }
@@ -576,7 +585,9 @@
                 lucide.createIcons();
                 
                 if (playPromise !== undefined && playPromise !== null) {
-                    playPromise.then(() => { bgMusic.pause(); }).catch(error => console.log(error));
+                    playPromise.then(() => {
+                        bgMusic.pause();
+                    }).catch(error => console.log(error));
                 } else {
                     bgMusic.pause();
                 }
@@ -597,7 +608,7 @@
         }
 
         // ==========================================
-        // 2. HIỆU ỨNG PHÁO HOA NÂNG CẤP
+        // 2. HIỆU ỨNG PHÁO HOA NÂNG CẤP 
         // ==========================================
         function createFireworks(containerId = 'fireworks-container') {
             const container = document.getElementById(containerId);
@@ -628,6 +639,7 @@
                     duration: 3000 + Math.random() * 4000, 
                     easing: 'cubic-bezier(0.1, 0.8, 0.3, 1)' 
                 });
+                
                 container.appendChild(particle);
             }
             setTimeout(() => { container.innerHTML = ''; }, 8000);
@@ -656,7 +668,7 @@
             const cup2 = document.getElementById('cup-2');
             const cup3 = document.getElementById('cup-3');
             const hint = document.getElementById('flash-hint');
-            const resultText = document.getElementById('practice-result');
+            const pointer = document.getElementById('hand-pointer');
             
             if(beam.classList.contains('hidden')) {
                 // Bật đèn
@@ -665,25 +677,30 @@
                 icon.classList.remove('text-slate-400');
                 
                 // Đổi màu nước theo độ sâu (Hấp thụ ánh sáng)
-                cup1.className = "absolute bottom-0 w-full h-1/3 bg-cyan-300 water-fill shadow-[0_-5px_15px_rgba(103,232,249,0.5)]";
-                cup2.className = "absolute bottom-0 w-full h-2/3 bg-blue-600 water-fill";
-                cup3.className = "absolute bottom-0 w-full h-full bg-slate-800 water-fill"; // Tối sẫm
+                cup1.className = "absolute bottom-0 w-full h-1/3 bg-cyan-300 water-fill water-bubbles shadow-[0_-5px_15px_rgba(103,232,249,0.5)]";
+                cup2.className = "absolute bottom-0 w-full h-2/3 bg-blue-600 water-fill water-bubbles";
+                cup3.className = "absolute bottom-0 w-full h-full bg-slate-800 water-fill water-bubbles"; // Tối sẫm
                 
                 hint.classList.add('opacity-0');
-                resultText.classList.remove('opacity-0', 'scale-95');
-                resultText.classList.add('opacity-100', 'scale-100');
+                if(pointer) pointer.classList.add('hidden');
+                
+                // Hiện các nhãn chữ trên các cốc
+                document.querySelectorAll('.cup-label').forEach(label => {
+                    label.classList.remove('hidden');
+                });
             } else {
                 // Tắt đèn
                 beam.classList.add('hidden');
                 icon.classList.remove('text-yellow-400', 'drop-shadow-[0_0_15px_rgba(250,204,21,0.8)]');
                 icon.classList.add('text-slate-400');
                 
-                cup1.className = "absolute bottom-0 w-full h-1/3 bg-blue-200 water-fill";
-                cup2.className = "absolute bottom-0 w-full h-2/3 bg-blue-400 water-fill";
-                cup3.className = "absolute bottom-0 w-full h-full bg-blue-700 water-fill";
+                cup1.className = "absolute bottom-0 w-full h-1/3 bg-blue-200 water-fill water-bubbles";
+                cup2.className = "absolute bottom-0 w-full h-2/3 bg-blue-400 water-fill water-bubbles";
+                cup3.className = "absolute bottom-0 w-full h-full bg-blue-700 water-fill water-bubbles";
                 
-                resultText.classList.add('opacity-0', 'scale-95');
-                resultText.classList.remove('opacity-100', 'scale-100');
+                document.querySelectorAll('.cup-label').forEach(label => {
+                    label.classList.add('hidden');
+                });
             }
         }
 
