@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sunbot Interactive Lesson - Màu của Nước Biển</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #fff7ed;
+            overflow: hidden; 
+            user-select: none; 
+        }
+
+        .hotspot-ping { animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite; }
+        @keyframes ping { 75%, 100% { transform: scale(2); opacity: 0; } }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #fdba74; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #f97316; }
+        
+        .sunbot-gradient { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); }
+        
+        .modal-enter {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .modal-enter-active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Game Animations */
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(5deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+        .animate-float { animation: float 3s ease-in-out infinite; }
+
+        /* Memory Card */
+        .memory-card { perspective: 1000px; cursor: pointer; }
+        .memory-card-inner { position: relative; width: 100%; height: 100%; text-align: center; transition: transform 0.6s; transform-style: preserve-3d; }
+        .memory-card.flipped .memory-card-inner { transform: rotateY(180deg); }
+        .memory-card-front, .memory-card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; align-items: center; justify-content: center; border-radius: 1rem; font-size: 4rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .memory-card-front { background-color: #fff; transform: rotateY(180deg); }
+        .memory-card-back { background: linear-gradient(135deg, #f97316, #fcd34d); color: white; font-size: 3rem; font-weight: black; }
+
+        /* Chùm sáng đèn pin cho phần thực hành */
+        .light-beam {
+            clip-path: polygon(48% 0, 52% 0, 100% 100%, 0% 100%);
+            background: linear-gradient(to bottom, rgba(253, 224, 71, 0.85) 0%, rgba(253, 224, 71, 0.1) 100%);
+            transform-origin: top center;
+            animation: pulse-light 1.5s infinite alternate;
+        }
+        @keyframes pulse-light { 0% { opacity: 0.7; } 100% { opacity: 1; } }
+
+        /* Cốc Thủy Tinh Thực Tế */
+        .glass-cup {
+            background: linear-gradient(to right, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.6) 20%, rgba(255,255,255,0.1) 100%);
+            border: 3px solid rgba(255, 255, 255, 0.9);
+            border-top: none;
+            border-radius: 0 0 16px 16px;
+            box-shadow: inset 0 -5px 15px rgba(0,0,0,0.1), 0 10px 15px rgba(0,0,0,0.15);
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(2px);
+            z-index: 20;
+        }
+        .water-fill {
+            transition: all 1.2s ease-in-out;
+            border-radius: 0 0 10px 10px;
+        }
+    </style>
+</head>
+<body class="h-screen w-screen flex flex-row relative">
+
+    <div class="hidden grid-cols-2 grid-cols-3 grid-cols-4"></div>
+
+    <!-- AUDIO NHẠC NỀN & VỖ TAY -->
+    <audio id="bgMusic" loop preload="auto">
+        <source src="https://sunbotvietnam.github.io/music/A2.%F0%9F%8E%B5%20SUNBOT%20%E2%80%93%20ROBOT%20DIE%CC%A3%CC%82U%20KY%CC%80%20%F0%9F%8E%B5-%20Vu%CC%83%20%C4%91ie%CC%A3%CC%82u%20Sunbot.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="clapAudio" preload="auto">
+        <source src="https://actions.google.com/sounds/v1/crowds/kids_cheering.ogg" type="audio/ogg">
+    </audio>
+
+    <button id="musicToggleBtn" onclick="toggleMusic(event)" class="absolute top-4 left-4 z-40 bg-white/80 backdrop-blur rounded-full p-3 shadow-lg border-2 border-orange-200 hover:scale-110 transition flex items-center justify-center">
+        <i data-lucide="volume-x" id="musicIcon" class="w-6 h-6 text-orange-500"></i>
+    </button>
+
+    <!-- BÊN TRÁI: KHU VỰC KHÁM PHÁ (Hình ảnh tĩnh) -->
+    <main class="w-2/3 h-full relative flex items-center justify-center p-4 bg-orange-50">
+        <div class="relative w-full h-full bg-white rounded-3xl shadow-2xl overflow-hidden border-4 border-white">
+            <img src="assets/img/nui-da.png" 
+                 alt="Khung cảnh núi đá" class="w-full h-full object-cover absolute inset-0 z-0" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?q=80&w=2000&auto=format&fit=crop'">
+            <div class="absolute inset-0 bg-blue-900/10 z-0"></div>
+
+            <!-- 6 ĐIỂM CHẠM A B C D E F -->
+            <div id="hotspots-container" class="absolute inset-0 z-20">
+                <button onclick="openPopup('A')" class="absolute top-[5%] left-[40%] group">
+                    <span class="absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75 hotspot-ping"></span>
+                    <span class="relative inline-flex rounded-full h-14 w-14 sunbot-gradient text-white items-center justify-center text-2xl font-black shadow-lg transform transition group-hover:scale-110 border-4 border-white">A</span>
+                </button>
+                <button onclick="openPopup('B')" class="absolute top-[35%] left-[20%] group">
+                    <span class="absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75 hotspot-ping"></span>
+                    <span class="relative inline-flex rounded-full h-14 w-14 sunbot-gradient text-white items-center justify-center text-2xl font-black shadow-lg transform transition group-hover:scale-110 border-4 border-white">B</span>
+                </button>
+                <button onclick="openPopup('C')" class="absolute top-[65%] left-[30%] group">
+                    <span class="absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75 hotspot-ping"></span>
+                    <span class="relative inline-flex rounded-full h-14 w-14 sunbot-gradient text-white items-center justify-center text-2xl font-black shadow-lg transform transition group-hover:scale-110 border-4 border-white">C</span>
+                </button>
+                <button onclick="openPopup('D')" class="absolute top-[20%] left-[50%] group">
+                    <span class="absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75 hotspot-ping"></span>
+                    <span class="relative inline-flex rounded-full h-14 w-14 sunbot-gradient text-white items-center justify-center text-2xl font-black shadow-lg transform transition group-hover:scale-110 border-4 border-white">D</span>
+                </button>
+                <button onclick="openPopup('E')" class="absolute top-[50%] left-[60%] group">
+                    <span class="absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75 hotspot-ping"></span>
+                    <span class="relative inline-flex rounded-full h-14 w-14 sunbot-gradient text-white items-center justify-center text-2xl font-black shadow-lg transform transition group-hover:scale-110 border-4 border-white">E</span>
+                </button>
+                <button onclick="openPopup('F')" class="absolute top-[10%] left-[80%] group">
+                    <span class="absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75 hotspot-ping"></span>
+                    <span class="relative inline-flex rounded-full h-14 w-14 sunbot-gradient text-white items-center justify-center text-2xl font-black shadow-lg transform transition group-hover:scale-110 border-4 border-white">F</span>
+                </button>
+            </div>
+
+            <!-- POPUP CHI TIẾT ĐIỂM CHẠM -->
+            <div id="info-popup" class="hidden absolute inset-0 z-30 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm transition-opacity duration-300 opacity-0">
+                <div class="glass-panel w-3/5 max-w-lg rounded-3xl p-8 relative transform scale-95 transition-transform duration-300" id="popup-content-box">
+                    <button onclick="closePopup()" class="absolute -top-4 -right-4 bg-red-500 hover:bg-red-600 text-white rounded-full p-3 shadow-xl transition-transform hover:scale-110">
+                        <i data-lucide="x" class="w-8 h-8"></i>
+                    </button>
+                    <div class="flex items-center gap-4 mb-6">
+                        <div id="popup-letter" class="flex-shrink-0 w-16 h-16 sunbot-gradient rounded-full text-white flex items-center justify-center text-3xl font-black border-4 border-white shadow-md">A</div>
+                        <h2 id="popup-title" class="text-3xl font-black text-slate-800 uppercase tracking-tight">ÁNH SÁNG</h2>
+                    </div>
+                    <p id="popup-desc" class="text-2xl text-slate-700 leading-relaxed font-medium">Mặt trời chiếu ánh sáng...</p>
+                    <div class="mt-8 flex justify-end">
+                        <button onclick="readPopupAloud()" class="flex items-center gap-2 bg-orange-100 text-orange-600 px-6 py-3 rounded-full font-bold text-lg hover:bg-orange-200 transition active:scale-95 shadow-sm">
+                            <i data-lucide="volume-2" class="w-6 h-6"></i> Sunbot Đọc
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- BÊN PHẢI: BẢNG ĐIỀU KHIỂN -->
+    <aside class="w-1/3 h-full bg-white shadow-[-10px_0_30px_-15px_rgba(0,0,0,0.1)] flex flex-col z-30 relative border-l-4 border-orange-100">
+        
+        <div class="p-6 border-b border-orange-100 flex items-center justify-between bg-orange-50/80">
+            <div class="flex items-center gap-4">
+                <div class="w-14 h-14 bg-white rounded-xl border-2 border-orange-200 flex items-center justify-center shadow-md p-1">
+                    <img src="assets/img/logo-sunbot-1.png" alt="Sunbot Logo" class="w-full h-full object-contain" onerror="this.onerror=null; this.src='https://via.placeholder.com/48x48/fff7ed/ea580c?text=SB'">
+                </div>
+                <div>
+                    <h2 class="text-xl font-black text-slate-800">Trợ giảng Sunbot</h2>
+                    <p class="text-sm font-semibold text-orange-500">Bài 2: Hệ Sinh Thái Biển</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex-1 flex flex-col overflow-y-auto p-6">
+            
+            <!-- TIÊU ĐỀ BÀI HỌC -->
+            <div class="mb-6 bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-100 rounded-2xl p-5 text-center shadow-sm relative overflow-hidden">
+                <div class="absolute -right-2 -top-2 opacity-10 text-6xl">🌊</div>
+                <h1 class="text-2xl font-black text-slate-800 uppercase tracking-wide mb-1 relative z-10">Nước Biển & Màu Sắc</h1>
+                <p class="text-base font-bold text-blue-600 relative z-10">Vì sao nước biển có màu xanh?</p>
+            </div>
+
+            <div class="mb-8 flex-1">
+                <h3 class="flex items-center gap-2 text-lg font-bold text-slate-800 mb-4 uppercase tracking-wider">
+                    <i data-lucide="message-circle-question" class="w-6 h-6 text-orange-500"></i> Câu hỏi Gợi mở
+                </h3>
+                <div class="space-y-4">
+                    <div class="border-2 border-slate-100 rounded-2xl overflow-hidden transition-all hover:border-orange-300">
+                        <button onclick="toggleAccordion('q1')" class="w-full text-left p-4 bg-white flex justify-between items-start focus:outline-none hover:bg-orange-50">
+                            <div class="flex gap-3 items-start pr-2">
+                                <span class="w-4 h-4 rounded-full bg-green-500 flex-shrink-0 mt-1.5 shadow-sm"></span>
+                                <span class="text-lg font-bold text-slate-700">1. Bạn thấy nước biển ở trong tranh có màu gì nhỉ?</span>
+                            </div>
+                            <i data-lucide="chevron-down" id="icon-q1" class="w-6 h-6 text-slate-400 transition-transform flex-shrink-0"></i>
+                        </button>
+                        <div id="q1" class="hidden bg-orange-50 px-4 py-4 border-t border-orange-100">
+                            <div class="flex gap-3">
+                                <i data-lucide="lightbulb" class="w-6 h-6 text-orange-600 flex-shrink-0"></i>
+                                <p class="text-base text-slate-700 font-medium">Nước biển có màu xanh (xanh dương, xanh lá...). Ở những chỗ khác nhau, màu xanh lại đậm nhạt khác nhau đấy!</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="border-2 border-slate-100 rounded-2xl overflow-hidden transition-all hover:border-orange-300">
+                        <button onclick="toggleAccordion('q2')" class="w-full text-left p-4 bg-white flex justify-between items-start focus:outline-none hover:bg-orange-50">
+                            <div class="flex gap-3 items-start pr-2">
+                                <span class="w-4 h-4 rounded-full bg-yellow-400 flex-shrink-0 mt-1.5 shadow-sm"></span>
+                                <span class="text-lg font-bold text-slate-700">2. Nước ở chỗ nông (gần bờ) và sâu có giống nhau không?</span>
+                            </div>
+                            <i data-lucide="chevron-down" id="icon-q2" class="w-6 h-6 text-slate-400 transition-transform flex-shrink-0"></i>
+                        </button>
+                        <div id="q2" class="hidden bg-orange-50 px-4 py-4 border-t border-orange-100">
+                            <div class="flex gap-3">
+                                <i data-lucide="lightbulb" class="w-6 h-6 text-orange-600 flex-shrink-0"></i>
+                                <p class="text-base text-slate-700 font-medium">Không giống nhau đâu. Nước càng sâu thì màu xanh càng đậm. Nước gần bờ thường nhạt hơn hoặc trong suốt.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="border-2 border-slate-100 rounded-2xl overflow-hidden transition-all hover:border-orange-300">
+                        <button onclick="toggleAccordion('q3')" class="w-full text-left p-4 bg-white flex justify-between items-start focus:outline-none hover:bg-orange-50">
+                            <div class="flex gap-3 items-start pr-2">
+                                <span class="w-4 h-4 rounded-full bg-red-500 flex-shrink-0 mt-1.5 shadow-sm"></span>
+                                <span class="text-lg font-bold text-slate-700">3. Theo bạn, những yếu tố nào quyết định màu của nước biển?</span>
+                            </div>
+                            <i data-lucide="chevron-down" id="icon-q3" class="w-6 h-6 text-slate-400 transition-transform flex-shrink-0"></i>
+                        </button>
+                        <div id="q3" class="hidden bg-orange-50 px-4 py-4 border-t border-orange-100">
+                            <div class="flex gap-3">
+                                <i data-lucide="lightbulb" class="w-6 h-6 text-orange-600 flex-shrink-0"></i>
+                                <p class="text-base text-slate-700 font-medium">Ánh sáng mặt trời chiếu xuống + Màu bầu trời + Độ sâu + Sóng biển + Các sinh vật nhỏ xíu dưới nước tạo nên màu biển đấy.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TỔ HỢP NÚT ĐIỀU KHIỂN CHÍNH -->
+            <div class="flex flex-col gap-3 mt-auto pt-2">
+                <!-- Dòng 1: Tổng quan và Thực hành -->
+                <div class="grid grid-cols-2 gap-3">
+                    <button onclick="openOverview()" class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl p-4 text-base font-black shadow-md transition transform hover:-translate-y-1 flex justify-center items-center gap-2 active:scale-95">
+                        <i data-lucide="image" class="w-5 h-5"></i> TỔNG QUAN
+                    </button>
+                    <button onclick="openPracticeMode()" class="sunbot-gradient text-white rounded-2xl p-4 text-base font-black shadow-md transition transform hover:-translate-y-1 flex justify-center items-center gap-2 active:scale-95">
+                        <i data-lucide="flask-conical" class="w-5 h-5"></i> THỰC HÀNH
+                    </button>
+                </div>
+                <!-- Dòng 2: Game nhanh và Trắc nghiệm -->
+                <div class="grid grid-cols-2 gap-3">
+                    <button onclick="openGameHub()" class="bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-2xl p-4 text-base font-black shadow-md transition transform hover:-translate-y-1 flex justify-center items-center gap-2 active:scale-95">
+                        <i data-lucide="gamepad-2" class="w-5 h-5"></i> GAME NHANH
+                    </button>
+                    <button onclick="selectDifficulty(5)" class="bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-2xl p-4 text-base font-black shadow-md transition transform hover:-translate-y-1 flex justify-center items-center gap-2 active:scale-95">
+                        <i data-lucide="lightbulb" class="w-5 h-5"></i> TRẮC NGHIỆM
+                    </button>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- MÀN HÌNH TỔNG QUAN BÀI HỌC (LIGHTBOX VIEWER) -->
+    <div id="overview-modal" class="hidden fixed inset-0 z-[70] bg-slate-900/95 backdrop-blur-md flex items-center justify-center p-4 sm:p-8">
+        <div class="relative w-full h-full flex items-center justify-center modal-enter" id="overview-content">
+            <button onclick="closeOverview()" class="absolute top-2 right-2 md:top-4 md:right-4 z-50 bg-red-500 hover:bg-red-600 text-white rounded-full p-3 shadow-[0_0_15px_rgba(239,68,68,0.5)] transition-transform hover:scale-110 border-2 border-white">
+                <i data-lucide="x" class="w-8 h-8"></i>
+            </button>
+            <img src="assets/img/plate-2.jpg" alt="Tổng quan bài học" class="max-w-full max-h-full rounded-2xl shadow-[0_0_50px_rgba(0,0,0,0.8)] border-4 border-white/20 object-contain" onerror="this.onerror=null; this.src='https://via.placeholder.com/1920x1080/1e293b/fff?text=Chua+co+anh+plate-2.jpg'">
+        </div>
+    </div>
+
+    <!-- MÀN HÌNH THỰC HÀNH TRỰC QUAN -->
+    <div id="practice-modal" class="hidden fixed inset-0 z-[60] bg-slate-900/80 backdrop-blur-md flex items-center justify-center">
+        <div class="bg-white w-11/12 h-5/6 rounded-3xl shadow-2xl flex flex-col overflow-hidden relative modal-enter" id="practice-content">
+            <div class="sunbot-gradient p-6 flex justify-between items-center text-white z-30">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-inner">
+                        <i data-lucide="flask-conical" class="w-6 h-6 text-orange-500"></i>
+                    </div>
+                    <h2 class="text-3xl font-black uppercase tracking-wide">Thực hành cùng Sunbot</h2>
+                </div>
+                <button onclick="closePracticeMode()" class="bg-white/20 hover:bg-white/40 rounded-full p-2 transition">
+                    <i data-lucide="x" class="w-8 h-8"></i>
+                </button>
+            </div>
+            
+            <div class="flex-1 flex p-8 gap-8 bg-orange-50">
+                <div class="w-1/2 bg-white rounded-2xl border-4 border-orange-200 flex flex-col items-center justify-center p-8 shadow-inner relative overflow-hidden">
+                    
+                    <!-- Thông báo tương tác (Biến mất khi bật đèn) -->
+                    <div id="flash-hint" class="absolute top-6 left-1/2 transform -translate-x-1/2 bg-yellow-100 text-yellow-700 px-6 py-2 rounded-full font-bold animate-pulse border-2 border-yellow-300 pointer-events-none z-30 whitespace-nowrap transition-opacity duration-500">
+                        👆 Chạm vào Sunbot để bật đèn pin nhé!
+                    </div>
+
+                    <!-- Thông báo kiến thức nảy ra khi bật đèn -->
+                    <div id="practice-result" class="absolute top-4 left-4 bg-blue-100 text-blue-800 p-4 rounded-xl border-l-8 border-blue-600 shadow-lg z-30 opacity-0 scale-95 transition-all duration-500 max-w-sm">
+                        <p class="font-black text-xl mb-1">💡 BẠN THẤY CHƯA?</p>
+                        <p class="font-semibold text-sm">Ánh sáng chiếu vào cốc sâu (cốc 3) đã bị nước hấp thụ rất nhiều, làm nước có màu xanh tối thẫm lại!</p>
+                    </div>
+
+                    <!-- Tia sáng của đèn pin (Ẩn mặc định) -->
+                    <div id="flashlight-beam" class="hidden absolute top-[130px] right-[85px] w-[140%] h-[400px] light-beam z-10 pointer-events-none -rotate-[22deg]"></div>
+
+                    <!-- 3 CỐC THỦY TINH TRỰC QUAN -->
+                    <div class="flex gap-8 items-end justify-center h-64 w-full z-20 pb-4">
+                        <div class="flex flex-col items-center gap-3">
+                            <div class="glass-cup w-24 h-24">
+                                <div id="cup-1" class="absolute bottom-0 w-full h-1/3 bg-blue-200 water-fill"></div>
+                            </div>
+                            <span class="font-bold text-slate-600 bg-white px-4 py-1 rounded-full shadow-sm border border-slate-200">Cạn</span>
+                        </div>
+                        <div class="flex flex-col items-center gap-3">
+                            <div class="glass-cup w-24 h-32">
+                                <div id="cup-2" class="absolute bottom-0 w-full h-2/3 bg-blue-300 water-fill"></div>
+                            </div>
+                            <span class="font-bold text-slate-600 bg-white px-4 py-1 rounded-full shadow-sm border border-slate-200">Vừa</span>
+                        </div>
+                        <div class="flex flex-col items-center gap-3">
+                            <div class="glass-cup w-24 h-48">
+                                <div id="cup-3" class="absolute bottom-0 w-full h-full bg-blue-500 water-fill"></div>
+                            </div>
+                            <span class="font-bold text-slate-600 bg-white px-4 py-1 rounded-full shadow-sm border border-slate-200">Sâu</span>
+                        </div>
+                    </div>
+                    
+                    <!-- LOGO SUNBOT SOI ĐÈN -->
+                    <div class="absolute top-12 right-12 flex flex-col items-center animate-bounce z-40 cursor-pointer hover:scale-110 transition-transform" onclick="toggleFlashlight()">
+                        <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-[0_10px_25px_rgba(234,88,12,0.4)] border-4 border-orange-400 p-2">
+                            <img src="assets/img/logo-sunbot-1.png" alt="Sunbot" class="w-full h-full object-contain" onerror="this.onerror=null; this.src='https://via.placeholder.com/64x64/fff7ed/ea580c?text=SB'">
+                        </div>
+                        <i data-lucide="flashlight" id="icon-flash" class="w-10 h-10 text-slate-400 mt-2 transform -rotate-45 transition-all duration-300"></i>
+                    </div>
+                </div>
+
+                <div class="w-1/2 flex flex-col justify-center gap-6">
+                    <h3 class="text-2xl font-black text-slate-800 mb-2">Thí nghiệm: Khám phá Độ sâu</h3>
+                    <div class="flex items-center gap-4 bg-white p-4 rounded-2xl shadow-sm border-l-8 border-green-500">
+                        <span class="w-10 h-10 rounded-full bg-green-100 text-green-600 font-black flex items-center justify-center text-xl flex-shrink-0">1</span>
+                        <p class="text-xl text-slate-700 font-semibold">Chúng mình cùng quan sát 3 cốc nước có mực nước: Cạn - Vừa - Sâu nhé.</p>
+                    </div>
+                    <div class="flex items-center gap-4 bg-white p-4 rounded-2xl shadow-sm border-l-8 border-yellow-400">
+                        <span class="w-10 h-10 rounded-full bg-yellow-100 text-yellow-600 font-black flex items-center justify-center text-xl flex-shrink-0">2</span>
+                        <p class="text-xl text-slate-700 font-semibold">Nhấn vào bạn Sunbot để dùng đèn pin chiếu ánh sáng từ trên xuống mặt nước.</p>
+                    </div>
+                    <div class="flex items-center gap-4 bg-white p-4 rounded-2xl shadow-sm border-l-8 border-red-500">
+                        <span class="w-10 h-10 rounded-full bg-red-100 text-red-600 font-black flex items-center justify-center text-xl flex-shrink-0">3</span>
+                        <p class="text-xl text-slate-700 font-semibold">Cốc nước nào bị ánh sáng hấp thụ khiến màu trở nên tối và đậm màu hơn?</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MÀN HÌNH CHỌN GAME (4 TRÒ CHƠI) -->
+    <div id="game-hub-modal" class="hidden fixed inset-0 z-50 bg-orange-900/90 backdrop-blur-md flex items-center justify-center">
+        <div class="w-11/12 h-5/6 rounded-3xl flex flex-col relative modal-enter" id="game-hub-content">
+            <button onclick="closeGameHub()" class="absolute top-0 right-0 bg-red-500 hover:bg-red-600 rounded-full p-4 transition shadow-md border-4 border-white z-20 hover:scale-110 flex items-center justify-center group">
+                <i data-lucide="x" class="w-8 h-8 text-white"></i>
+                <span class="absolute -bottom-8 bg-white text-red-600 font-bold px-3 py-1 rounded-full text-sm shadow-md opacity-0 group-hover:opacity-100 transition whitespace-nowrap">Đóng</span>
+            </button>
+            <div class="text-center mb-8 mt-10">
+                <h2 class="text-5xl font-black text-yellow-300 drop-shadow-lg uppercase tracking-widest">Khu Vui Chơi Sunbot</h2>
+                <p class="text-2xl text-white font-bold mt-2">Bạn muốn thử thách trò chơi nào hôm nay?</p>
+            </div>
+            
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-8 px-16 overflow-y-auto pb-10 max-w-5xl mx-auto h-full items-start justify-center">
+                <button onclick="selectDifficulty(1)" class="bg-white rounded-3xl p-6 flex flex-col items-center hover:scale-105 transition shadow-xl border-b-8 border-orange-400">
+                    <div class="text-8xl mb-2">♻️</div><h3 class="text-2xl font-black text-orange-700 text-center">Dọn Rác<br>Đại Dương</h3>
+                </button>
+                <button onclick="selectDifficulty(2)" class="bg-white rounded-3xl p-6 flex flex-col items-center hover:scale-105 transition shadow-xl border-b-8 border-blue-400">
+                    <div class="text-8xl mb-2">⚖️</div><h3 class="text-2xl font-black text-blue-700 text-center">Tách Nước<br>Mặn - Ngọt</h3>
+                </button>
+                <button onclick="selectDifficulty(3)" class="bg-white rounded-3xl p-6 flex flex-col items-center hover:scale-105 transition shadow-xl border-b-8 border-green-400">
+                    <div class="text-8xl mb-2">🐢</div><h3 class="text-2xl font-black text-green-700 text-center">Cứu Hộ<br>Rùa Biển</h3>
+                </button>
+                <button onclick="selectDifficulty(4)" class="bg-white rounded-3xl p-6 flex flex-col items-center hover:scale-105 transition shadow-xl border-b-8 border-purple-400">
+                    <div class="text-8xl mb-2">🧠</div><h3 class="text-2xl font-black text-purple-700 text-center">Trí Nhớ<br>San Hô</h3>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- POPUP CHỌN ĐỘ KHÓ -->
+    <div id="difficulty-modal" class="hidden absolute inset-0 z-[60] bg-black/60 backdrop-blur-sm flex items-center justify-center">
+        <div class="bg-white p-8 rounded-3xl shadow-2xl text-center max-w-lg border-8 border-orange-200 transform scale-95 transition-transform" id="diff-box">
+            <h2 class="text-3xl font-black text-slate-800 mb-6 uppercase">Chọn Cấp Độ</h2>
+            <div class="flex flex-col gap-4">
+                <button onclick="confirmLaunchGame(1)" class="flex items-center gap-4 bg-green-100 p-4 rounded-2xl hover:bg-green-200 hover:scale-105 transition border-4 border-transparent hover:border-green-300">
+                    <span class="w-8 h-8 rounded-full bg-green-500 shadow-md"></span>
+                    <span class="text-2xl font-black text-green-700">Cấp độ 1 (Dễ nhất)</span>
+                </button>
+                <button onclick="confirmLaunchGame(2)" class="flex items-center gap-4 bg-yellow-100 p-4 rounded-2xl hover:bg-yellow-200 hover:scale-105 transition border-4 border-transparent hover:border-yellow-300">
+                    <span class="w-8 h-8 rounded-full bg-yellow-400 shadow-md"></span>
+                    <span class="text-2xl font-black text-yellow-700">Cấp độ 2 (Thử thách)</span>
+                </button>
+                <button onclick="confirmLaunchGame(3)" class="flex items-center gap-4 bg-red-100 p-4 rounded-2xl hover:bg-red-200 hover:scale-105 transition border-4 border-transparent hover:border-red-300">
+                    <span class="w-8 h-8 rounded-full bg-red-500 shadow-md"></span>
+                    <span class="text-2xl font-black text-red-700">Cấp độ 3 (Siêu Khó)</span>
+                </button>
+            </div>
+            <button onclick="closeDifficulty()" class="mt-6 text-slate-400 font-bold hover:text-slate-600">Quay lại</button>
+        </div>
+    </div>
+
+    <!-- MÀN HÌNH CHƠI GAME CHÍNH THỨC -->
+    <div id="active-game-modal" class="hidden fixed inset-0 z-50 bg-slate-900/95 backdrop-blur-md flex items-center justify-center">
+        <div class="w-5/6 h-5/6 rounded-3xl shadow-2xl flex flex-col overflow-hidden relative modal-enter border-8 border-white bg-gradient-to-b from-orange-100 to-yellow-200" id="active-game-content">
+            
+            <div class="p-4 flex justify-between items-center text-white sunbot-gradient shadow-md z-10 relative">
+                <button onclick="closeActiveGame()" class="bg-white text-orange-600 hover:bg-orange-50 font-bold px-4 py-2 rounded-full transition shadow-md border-2 border-orange-200 hover:scale-105 flex items-center gap-2">
+                    <i data-lucide="arrow-left" class="w-5 h-5"></i> BÀI HỌC
+                </button>
+
+                <div class="bg-white text-orange-600 font-black px-6 py-2 rounded-full text-xl shadow-inner border-2 border-orange-200 flex items-center gap-2">
+                    <span id="diff-indicator" class="w-4 h-4 rounded-full bg-green-500 block"></span>
+                    ĐIỂM: <span id="game-score">0</span>
+                </div>
+                
+                <div class="absolute left-1/2 transform -translate-x-1/2 flex flex-col items-center top-2">
+                    <div id="game-time-display" class="text-7xl font-black text-yellow-100 drop-shadow-[0_4px_4px_rgba(0,0,0,0.3)] bg-red-500 px-8 py-2 rounded-3xl border-4 border-white animate-pulse">
+                        15
+                    </div>
+                </div>
+                <div class="w-[120px]"></div>
+            </div>
+
+            <div id="game-canvas" class="flex-1 relative overflow-hidden flex items-center justify-center p-6">
+                <!-- Nội dung game render qua JS -->
+            </div>
+
+            <div id="game-result" class="hidden absolute inset-0 bg-orange-900/95 backdrop-blur-md z-30 flex flex-col items-center justify-center overflow-hidden">
+                <div id="fireworks-container" class="absolute inset-0 pointer-events-none z-10"></div>
+                <div id="result-icon" class="text-9xl mb-4 animate-bounce z-20">🏆</div>
+                <h2 id="result-title" class="text-6xl font-black text-yellow-400 mb-8 drop-shadow-lg text-center uppercase tracking-wider z-20">Tuyệt vời!<br>Bạn làm tốt lắm!</h2>
+                
+                <div class="flex gap-4 z-20 relative" id="result-actions">
+                    <!-- Nút gen động -->
+                </div>
+            </div>
+
+            <!-- MÀN HÌNH TỔNG KẾT TRẮC NGHIỆM -->
+            <div id="quiz-summary-result" class="hidden absolute inset-0 bg-blue-900/95 backdrop-blur-md z-30 flex flex-col items-center justify-center overflow-hidden">
+                <div id="quiz-fireworks" class="absolute inset-0 pointer-events-none z-10"></div>
+                <div class="bg-white p-8 rounded-3xl shadow-2xl z-20 max-w-3xl w-full text-center border-8 border-orange-200">
+                    <div class="text-7xl mb-4 animate-bounce">🎉</div>
+                    <h2 class="text-4xl font-black text-orange-600 mb-6 uppercase">Hoàn Thành Xuất Sắc!</h2>
+                    
+                    <div class="bg-blue-50 p-6 rounded-2xl text-left border-l-8 border-blue-500 mb-8">
+                        <h3 class="text-2xl font-black text-slate-800 mb-4">🧠 KIẾN THỨC CẦN NHỚ:</h3>
+                        <ul class="text-xl text-slate-700 font-semibold space-y-3">
+                            <li>✨ Nước biển màu xanh do <b>phản xạ ánh sáng mặt trời</b>.</li>
+                            <li>🌊 Nước <b>càng sâu</b> thì màu xanh <b>càng đậm</b>.</li>
+                            <li>🐟 Bầu trời, sóng biển và cả các <b>sinh vật nhỏ li ti</b> cũng góp phần tạo nên màu sắc đa dạng của đại dương.</li>
+                        </ul>
+                    </div>
+
+                    <div class="flex justify-center gap-4">
+                        <button onclick="closeActiveGame()" class="bg-slate-200 text-slate-700 px-8 py-4 rounded-full text-xl font-black shadow-lg hover:scale-105 transition-transform border-2 border-slate-300 flex items-center gap-2">
+                            <i data-lucide="book-open"></i> VỀ BÀI HỌC
+                        </button>
+                        <button onclick="confirmLaunchGame(currentLevel)" class="sunbot-gradient text-white px-8 py-4 rounded-full text-xl font-black shadow-xl hover:scale-105 transition-transform border-4 border-white">
+                            CHƠI LẠI TRẮC NGHIỆM
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        // ==========================================
+        // 1. HỆ THỐNG ÂM THANH ÁO & NHẠC NỀN
+        // ==========================================
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx;
+        
+        function initSFX() {
+            if(!audioCtx) audioCtx = new AudioContext();
+        }
+
+        function playWin() {
+            if(!audioCtx) return;
+            const notes = [400, 500, 600, 800, 1000, 1200];
+            notes.forEach((freq, idx) => {
+                setTimeout(() => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.value = freq;
+                    gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                    osc.connect(gain); gain.connect(audioCtx.destination);
+                    osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+                }, idx * 150);
+            });
+        }
+
+        function playWrong() {
+            if(!audioCtx) return;
+            const notes = [300, 250, 200, 150]; 
+            notes.forEach((freq, idx) => {
+                setTimeout(() => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(freq - 20, audioCtx.currentTime + 0.5);
+                    gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+                    osc.connect(gain); gain.connect(audioCtx.destination);
+                    osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+                }, idx * 400); 
+            });
+        }
+
+        function playPop() {
+            if(!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.1);
+            gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+            osc.connect(gainNode); gainNode.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+        }
+
+        let isMusicPlaying = false;
+        let hasInteracted = false;
+        let playPromise = null; 
+        
+        const bgMusic = document.getElementById('bgMusic');
+        const clapAudio = document.getElementById('clapAudio');
+        const musicIcon = document.getElementById('musicIcon');
+
+        function startAudioEnvironment() {
+            if (hasInteracted) return;
+            hasInteracted = true; 
+            
+            initSFX(); 
+            bgMusic.volume = 0.4;
+            
+            playPromise = bgMusic.play();
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    isMusicPlaying = true;
+                    musicIcon.setAttribute('data-lucide', 'music-4');
+                    lucide.createIcons();
+                    
+                    ['click', 'touchstart', 'keydown'].forEach(evt => {
+                        document.removeEventListener(evt, startAudioEnvironment);
+                    });
+                }).catch(e => {
+                    console.log("Waiting for user interaction to play music...");
+                    hasInteracted = false; 
+                });
+            }
+        }
+
+        ['click', 'touchstart', 'keydown'].forEach(evt => {
+            document.addEventListener(evt, startAudioEnvironment);
+        });
+
+        function toggleMusic(e) {
+            e.stopPropagation(); 
+            playPop();
+            if (isMusicPlaying) {
+                isMusicPlaying = false;
+                musicIcon.setAttribute('data-lucide', 'volume-x');
+                lucide.createIcons();
+                
+                if (playPromise !== undefined && playPromise !== null) {
+                    playPromise.then(() => { bgMusic.pause(); }).catch(error => console.log(error));
+                } else {
+                    bgMusic.pause();
+                }
+            } else {
+                isMusicPlaying = true;
+                musicIcon.setAttribute('data-lucide', 'music-4');
+                lucide.createIcons();
+                
+                playPromise = bgMusic.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(error => {
+                        isMusicPlaying = false;
+                        musicIcon.setAttribute('data-lucide', 'volume-x');
+                        lucide.createIcons();
+                    });
+                }
+            }
+        }
+
+        // ==========================================
+        // 2. HIỆU ỨNG PHÁO HOA NÂNG CẤP
+        // ==========================================
+        function createFireworks(containerId = 'fireworks-container') {
+            const container = document.getElementById(containerId);
+            container.innerHTML = ''; 
+            const colors = ['#fcd34d', '#f97316', '#ef4444', '#3b82f6', '#10b981', '#ec4899', '#ffffff'];
+            
+            for(let i = 0; i < 150; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'absolute rounded-full shadow-lg';
+                
+                const size = Math.random() * 14 + 6; 
+                particle.style.width = size + 'px';
+                particle.style.height = size + 'px';
+                particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                
+                particle.style.left = '50%';
+                particle.style.top = '50%';
+                
+                const angle = Math.random() * Math.PI * 2;
+                const velocity = 300 + Math.random() * 800; 
+                const tx = Math.cos(angle) * velocity;
+                const ty = Math.sin(angle) * velocity;
+                
+                particle.animate([
+                    { transform: 'translate(-50%, -50%) scale(1)', opacity: 1 },
+                    { transform: `translate(calc(-50% + ${tx}px), calc(-50% + ${ty + 400}px)) scale(0)`, opacity: 0 }
+                ], { 
+                    duration: 3000 + Math.random() * 4000, 
+                    easing: 'cubic-bezier(0.1, 0.8, 0.3, 1)' 
+                });
+                container.appendChild(particle);
+            }
+            setTimeout(() => { container.innerHTML = ''; }, 8000);
+        }
+
+        // ==========================================
+        // TỔNG QUAN BÀI HỌC VÀ THỰC HÀNH TƯƠNG TÁC
+        // ==========================================
+        function openOverview() {
+            initSFX(); playPop();
+            document.getElementById('overview-modal').classList.remove('hidden');
+            setTimeout(() => { document.getElementById('overview-content').classList.add('modal-enter-active'); }, 10);
+        }
+
+        function closeOverview() {
+            playPop();
+            document.getElementById('overview-content').classList.remove('modal-enter-active');
+            setTimeout(() => { document.getElementById('overview-modal').classList.add('hidden'); }, 300);
+        }
+
+        function toggleFlashlight() {
+            initSFX(); playPop();
+            const beam = document.getElementById('flashlight-beam');
+            const icon = document.getElementById('icon-flash');
+            const cup1 = document.getElementById('cup-1');
+            const cup2 = document.getElementById('cup-2');
+            const cup3 = document.getElementById('cup-3');
+            const hint = document.getElementById('flash-hint');
+            const resultText = document.getElementById('practice-result');
+            
+            if(beam.classList.contains('hidden')) {
+                // Bật đèn
+                beam.classList.remove('hidden');
+                icon.classList.add('text-yellow-400', 'drop-shadow-[0_0_15px_rgba(250,204,21,0.8)]');
+                icon.classList.remove('text-slate-400');
+                
+                // Đổi màu nước theo độ sâu (Hấp thụ ánh sáng)
+                cup1.className = "absolute bottom-0 w-full h-1/3 bg-cyan-300 water-fill shadow-[0_-5px_15px_rgba(103,232,249,0.5)]";
+                cup2.className = "absolute bottom-0 w-full h-2/3 bg-blue-600 water-fill";
+                cup3.className = "absolute bottom-0 w-full h-full bg-slate-800 water-fill"; // Tối sẫm
+                
+                hint.classList.add('opacity-0');
+                resultText.classList.remove('opacity-0', 'scale-95');
+                resultText.classList.add('opacity-100', 'scale-100');
+            } else {
+                // Tắt đèn
+                beam.classList.add('hidden');
+                icon.classList.remove('text-yellow-400', 'drop-shadow-[0_0_15px_rgba(250,204,21,0.8)]');
+                icon.classList.add('text-slate-400');
+                
+                cup1.className = "absolute bottom-0 w-full h-1/3 bg-blue-200 water-fill";
+                cup2.className = "absolute bottom-0 w-full h-2/3 bg-blue-400 water-fill";
+                cup3.className = "absolute bottom-0 w-full h-full bg-blue-700 water-fill";
+                
+                resultText.classList.add('opacity-0', 'scale-95');
+                resultText.classList.remove('opacity-100', 'scale-100');
+            }
+        }
+
+        // ==========================================
+        // 3. LOGIC BÀI HỌC (POPUP CHỮ TRÊN ẢNH)
+        // ==========================================
+        const lessonData = {
+            'A': { title: 'ÁNH SÁNG', desc: 'Mặt trời chiếu ánh sáng xuống mặt nước. Nếu không có ánh sáng, biển sẽ tối thui!' },
+            'B': { title: 'PHẢN XẠ', desc: 'Nước giống như một chiếc gương khổng lồ, phản chiếu lại màu sắc của bầu trời.' },
+            'C': { title: 'ĐỘ SÂU', desc: 'Nước càng sâu thì ánh sáng càng bị hấp thụ nhiều, làm cho màu nước trở nên xanh thẫm hơn.' },
+            'D': { title: 'SÓNG', desc: 'Sóng làm mặt nước chuyển động liên tục, khiến màu sắc bị khuếch tán và thay đổi ở nhiều góc nhìn.' },
+            'E': { title: 'SINH VẬT NHỎ', desc: 'Các sinh vật li ti (như phù du, tảo biển) trôi nổi trong nước cũng góp phần làm thay đổi màu của biển.' },
+            'F': { title: 'BẦU TRỜI', desc: 'Vào ngày nắng đẹp, bầu trời xanh ngắt sẽ giúp nước biển nhìn có màu xanh biếc rực rỡ hơn.' }
+        };
+
+        let currentTextToRead = "";
+        const popup = document.getElementById('info-popup');
+        const popupBox = document.getElementById('popup-content-box');
+
+        function openPopup(letter) {
+            initSFX(); playPop(); 
+            const data = lessonData[letter];
+            document.getElementById('popup-letter').innerText = letter;
+            document.getElementById('popup-title').innerText = data.title;
+            document.getElementById('popup-desc').innerText = data.desc;
+            currentTextToRead = data.title + ". " + data.desc;
+            popup.classList.remove('hidden');
+            setTimeout(() => {
+                popup.classList.remove('opacity-0');
+                popupBox.classList.remove('scale-95');
+                popupBox.classList.add('scale-100');
+            }, 10);
+        }
+
+        function closePopup() {
+            playPop();
+            popup.classList.add('opacity-0');
+            popupBox.classList.remove('scale-100');
+            popupBox.classList.add('scale-95');
+            if('speechSynthesis' in window) window.speechSynthesis.cancel();
+            setTimeout(() => { popup.classList.add('hidden'); }, 300);
+        }
+
+        function readPopupAloud() {
+            playPop();
+            if (!('speechSynthesis' in window)) return;
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(currentTextToRead);
+            utterance.lang = 'vi-VN'; 
+            utterance.rate = 0.9;     
+            utterance.pitch = 1.2;    
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function toggleAccordion(id) {
+            initSFX(); playPop();
+            const content = document.getElementById(id);
+            const icon = document.getElementById('icon-' + id);
+            content.classList.toggle('hidden');
+            icon.classList.toggle('rotate-180');
+        }
+
+        function openPracticeMode() {
+            initSFX(); playPop();
+            document.getElementById('practice-modal').classList.remove('hidden');
+            setTimeout(() => { document.getElementById('practice-content').classList.add('modal-enter-active'); }, 10);
+        }
+        function closePracticeMode() {
+            playPop();
+            document.getElementById('practice-content').classList.remove('modal-enter-active');
+            setTimeout(() => { document.getElementById('practice-modal').classList.add('hidden'); }, 300);
+        }
+
+        // ==========================================
+        // 4. HỆ THỐNG ĐIỀU HƯỚNG GAME & TRẮC NGHIỆM
+        // ==========================================
+        let gameTimer;
+        let timeLeft = 15;
+        let score = 0;
+        let targetScore = 5;
+        let currentGameId = 0;
+        let currentLevel = 1; 
+
+        function openGameHub() {
+            initSFX(); playPop();
+            document.getElementById('game-hub-modal').classList.remove('hidden');
+            setTimeout(() => { document.getElementById('game-hub-content').classList.add('modal-enter-active'); }, 10);
+        }
+
+        function closeGameHub() {
+            playPop();
+            document.getElementById('game-hub-content').classList.remove('modal-enter-active');
+            setTimeout(() => { document.getElementById('game-hub-modal').classList.add('hidden'); }, 300);
+        }
+
+        function selectDifficulty(gameId) {
+            playPop();
+            currentGameId = gameId;
+            document.getElementById('difficulty-modal').classList.remove('hidden');
+            setTimeout(() => { document.getElementById('diff-box').classList.replace('scale-95', 'scale-100'); }, 10);
+        }
+
+        function closeDifficulty() {
+            playPop();
+            document.getElementById('diff-box').classList.replace('scale-100', 'scale-95');
+            setTimeout(() => { document.getElementById('difficulty-modal').classList.add('hidden'); }, 300);
+        }
+
+        function closeActiveGame() {
+            playPop();
+            clearInterval(gameTimer);
+            document.getElementById('active-game-content').classList.remove('modal-enter-active');
+            setTimeout(() => { 
+                document.getElementById('active-game-modal').classList.add('hidden'); 
+                document.getElementById('game-hub-modal').classList.add('hidden'); 
+                document.getElementById('quiz-summary-result').classList.add('hidden'); 
+            }, 300);
+        }
+
+        function closeGameAndOpenHub() {
+            playPop();
+            clearInterval(gameTimer);
+            document.getElementById('active-game-content').classList.remove('modal-enter-active');
+            setTimeout(() => { 
+                document.getElementById('active-game-modal').classList.add('hidden'); 
+                document.getElementById('quiz-summary-result').classList.add('hidden'); 
+            }, 300);
+        }
+
+        function confirmLaunchGame(level) {
+            playPop();
+            currentLevel = level;
+            closeDifficulty();
+            
+            document.getElementById('game-result').classList.add('hidden');
+            document.getElementById('quiz-summary-result').classList.add('hidden');
+            
+            const indicator = document.getElementById('diff-indicator');
+            if(level === 1) indicator.className = 'w-4 h-4 rounded-full bg-green-500 block';
+            else if(level === 2) indicator.className = 'w-4 h-4 rounded-full bg-yellow-400 block';
+            else indicator.className = 'w-4 h-4 rounded-full bg-red-500 block animate-pulse';
+
+            score = 0;
+            document.getElementById('game-score').innerText = score;
+            const canvas = document.getElementById('game-canvas');
+            canvas.innerHTML = ''; 
+            
+            document.getElementById('active-game-modal').classList.remove('hidden');
+            setTimeout(() => { document.getElementById('active-game-content').classList.add('modal-enter-active'); }, 10);
+
+            const resultActions = document.getElementById('result-actions');
+            if(currentGameId !== 5) {
+                resultActions.innerHTML = `
+                    <button onclick="closeActiveGame()" class="bg-white text-orange-600 px-8 py-4 rounded-full text-xl font-black shadow-xl hover:scale-105 transition-transform border-4 border-orange-200 flex items-center gap-2">
+                        <i data-lucide="book-open"></i> BÀI HỌC
+                    </button>
+                    <button onclick="closeGameAndOpenHub()" class="bg-white text-orange-600 px-8 py-4 rounded-full text-xl font-black shadow-xl hover:scale-105 transition-transform border-4 border-orange-200">
+                        CHỌN GAME KHÁC
+                    </button>
+                    <button id="btn-replay" onclick="confirmLaunchGame(${level})" class="sunbot-gradient text-white px-8 py-4 rounded-full text-xl font-black shadow-xl hover:scale-105 transition-transform border-4 border-white">
+                        CHƠI LẠI
+                    </button>
+                `;
+                lucide.createIcons();
+            }
+
+            switch(currentGameId) {
+                case 1: initGame1(canvas, level); break; 
+                case 2: initGame2(canvas, level); break; 
+                case 3: initGame3(canvas, level); break; 
+                case 4: initGame4(canvas, level); break; 
+                case 5: initGame5(canvas, level); break; 
+            }
+        }
+
+        function showResult(isWin) {
+            clearInterval(gameTimer);
+            document.getElementById('game-result').classList.remove('hidden');
+            
+            if(isWin) {
+                playWin();
+                clapAudio.currentTime = 0; 
+                const clapPromise = clapAudio.play();
+                if(clapPromise !== undefined) clapPromise.catch(e=>console.log("Audio error: ", e));
+                createFireworks('fireworks-container'); 
+                
+                document.getElementById('result-icon').innerText = '🏆';
+                document.getElementById('result-title').innerText = 'Tuyệt vời!\nBạn làm tốt lắm!';
+                document.getElementById('result-title').className = "text-6xl font-black text-yellow-400 mb-8 drop-shadow-lg text-center uppercase tracking-wider z-20";
+            } else {
+                playWrong();
+                document.getElementById('fireworks-container').innerHTML = '';
+                document.getElementById('result-icon').innerText = '⏰';
+                document.getElementById('result-title').innerText = 'Hết giờ rồi!\nChúng mình cùng thử lại nhé!';
+                document.getElementById('result-title').className = "text-6xl font-black text-red-400 mb-8 drop-shadow-lg text-center uppercase tracking-wider z-20";
+            }
+        }
+
+        function showQuizSummary() {
+            clearInterval(gameTimer);
+            playWin();
+            clapAudio.currentTime = 0; 
+            const clapPromise = clapAudio.play();
+            if(clapPromise !== undefined) clapPromise.catch(e=>console.log("Audio error: ", e));
+            createFireworks('quiz-fireworks');
+            
+            document.getElementById('quiz-summary-result').classList.remove('hidden');
+        }
+
+        function updateTimerUI() {
+            const timeDisplay = document.getElementById('game-time-display');
+            timeDisplay.innerText = timeLeft;
+            if(timeLeft <= 5) {
+                timeDisplay.classList.replace('bg-red-500', 'bg-red-700');
+                timeDisplay.classList.add('scale-125'); 
+            } else {
+                timeDisplay.classList.remove('scale-125');
+                timeDisplay.classList.replace('bg-red-700', 'bg-red-500');
+            }
+        }
+
+        function startGameLoop(seconds) {
+            timeLeft = seconds;
+            updateTimerUI();
+            
+            clearInterval(gameTimer);
+            gameTimer = setInterval(() => {
+                timeLeft--;
+                updateTimerUI();
+                if(timeLeft <= 0) {
+                    clearInterval(gameTimer);
+                    if (currentGameId !== 5) {
+                        showResult(false); 
+                    } else {
+                        showQuizSummary(); 
+                    }
+                }
+            }, 1000);
+        }
+
+        // ==================================================
+        // GAME 1: DỌN RÁC ĐẠI DƯƠNG
+        // ==================================================
+        function initGame1(canvas, level) {
+            targetScore = level === 1 ? 5 : (level === 2 ? 8 : 12);
+            let timeLimit = level === 1 ? 15 : (level === 2 ? 12 : 10);
+            startGameLoop(timeLimit);
+            
+            const trashIcons = ['🥤', '🛍️', '🥫', '📦', '🧃', '🩴', '📰'];
+            canvas.innerHTML = `<div class="absolute bottom-10 text-orange-800/60 font-black text-3xl text-center w-full pointer-events-none">Chạm nhanh vào ${targetScore} rác để dọn sạch biển!</div>`;
+            
+            for(let i = 0; i < targetScore; i++) {
+                let t = document.createElement('div');
+                let floatSpeed = level === 1 ? '3s' : (level === 2 ? '2s' : '1.5s');
+                t.className = 'absolute cursor-pointer text-7xl drop-shadow-lg transition-all duration-200 hover:scale-125';
+                t.style.animation = `float ${floatSpeed} ease-in-out infinite`;
+                t.style.left = Math.floor(Math.random() * 80 + 10) + '%';
+                t.style.top = Math.floor(Math.random() * 60 + 10) + '%'; 
+                t.style.animationDelay = Math.random() * 2 + 's';
+                t.innerText = trashIcons[i % trashIcons.length];
+                
+                t.onclick = function() {
+                    playPop(); 
+                    this.style.transform = 'scale(0)';
+                    setTimeout(() => this.remove(), 200);
+                    score++; document.getElementById('game-score').innerText = score;
+                    if(score === targetScore) setTimeout(() => showResult(true), 500); 
+                };
+                canvas.appendChild(t);
+            }
+        }
+
+        // ==================================================
+        // GAME 2: TÁCH MẶN - NGỌT
+        // ==================================================
+        function initGame2(canvas, level) {
+            targetScore = level === 1 ? 4 : (level === 2 ? 6 : 8);
+            let timeLimit = level === 1 ? 15 : (level === 2 ? 12 : 10);
+            startGameLoop(timeLimit);
+            
+            let allItems = [
+                { i: '🐋', type: 'man' }, { i: '🐡', type: 'man' }, { i: '🦈', type: 'man' }, { i: '🐙', type: 'man' },
+                { i: '🐸', type: 'ngot' }, { i: '🐟', type: 'ngot' }, { i: '🦆', type: 'ngot' }, { i: '🐊', type: 'ngot' }
+            ];
+            
+            let items = allItems.sort(() => Math.random() - 0.5).slice(0, targetScore);
+            let currentIdx = 0;
+
+            canvas.innerHTML = `
+                <div class="flex w-full h-full flex-col items-center justify-center gap-10">
+                    <div id="item-display" class="text-[150px] animate-bounce drop-shadow-lg">${items[0].i}</div>
+                    <div class="flex gap-16">
+                        <button onclick="checkGame2('ngot')" class="bg-green-500 text-white font-black text-3xl px-12 py-8 rounded-3xl shadow-xl hover:scale-110 border-4 border-white active:scale-95 transition">SÔNG HỒ<br><span class="text-xl">(Nước ngọt)</span></button>
+                        <button onclick="checkGame2('man')" class="bg-blue-600 text-white font-black text-3xl px-12 py-8 rounded-3xl shadow-xl hover:scale-110 border-4 border-white active:scale-95 transition">BIỂN CẢ<br><span class="text-xl">(Nước mặn)</span></button>
+                    </div>
+                </div>
+            `;
+            
+            window.checkGame2 = function(choice) {
+                if(choice === items[currentIdx].type) {
+                    playPop(); 
+                    score++; document.getElementById('game-score').innerText = score;
+                    currentIdx++;
+                    if(currentIdx < items.length) {
+                        document.getElementById('item-display').innerText = items[currentIdx].i;
+                    } else {
+                        setTimeout(() => showResult(true), 500);
+                    }
+                } else {
+                    playWrong(); 
+                    timeLeft = Math.max(0, timeLeft - 2);
+                    updateTimerUI();
+                    document.getElementById('item-display').classList.add('opacity-50');
+                    setTimeout(()=>document.getElementById('item-display').classList.remove('opacity-50'), 200);
+                }
+            }
+        }
+
+        // ==================================================
+        // GAME 3: CỨU HỘ RÙA BIỂN
+        // ==================================================
+        function initGame3(canvas, level) {
+            targetScore = 1;
+            let timeLimit = level === 1 ? 10 : (level === 2 ? 7 : 5);
+            startGameLoop(timeLimit);
+            
+            let options = [
+                { icon: '🦈', isSafe: false }, 
+                { icon: '🌊', isSafe: true }, 
+                { icon: '🕸️', isSafe: false }
+            ].sort(() => Math.random() - 0.5);
+
+            canvas.innerHTML = `
+                <div class="flex flex-col h-full w-full justify-between items-center pt-10 px-8 pb-4">
+                    <div id="turtle-avatar" class="text-[120px] z-10 transition-transform duration-1000 ease-in-out drop-shadow-2xl">🐢</div>
+                    <div class="text-3xl font-black text-orange-900 bg-white/50 px-8 py-2 rounded-full mb-10">Rùa con về nhà ở đâu thì an toàn?</div>
+                    <div class="w-full flex justify-around mt-auto gap-4">
+                        <button onclick="checkGame3(${options[0].isSafe})" class="flex-1 text-8xl bg-blue-300 py-8 rounded-t-[50px] hover:bg-blue-400 border-t-8 border-x-8 border-white transition hover:-translate-y-4 shadow-lg">${options[0].icon}</button>
+                        <button onclick="checkGame3(${options[1].isSafe})" class="flex-1 text-8xl bg-blue-300 py-8 rounded-t-[50px] hover:bg-blue-400 border-t-8 border-x-8 border-white transition hover:-translate-y-4 shadow-lg">${options[1].icon}</button>
+                        <button onclick="checkGame3(${options[2].isSafe})" class="flex-1 text-8xl bg-blue-300 py-8 rounded-t-[50px] hover:bg-blue-400 border-t-8 border-x-8 border-white transition hover:-translate-y-4 shadow-lg">${options[2].icon}</button>
+                    </div>
+                </div>
+            `;
+            
+            window.checkGame3 = function(isSafe) {
+                if(isSafe) {
+                    playPop();
+                    document.getElementById('turtle-avatar').style.transform = 'translateY(250px) scale(0.5)';
+                    score = 1; document.getElementById('game-score').innerText = score;
+                    setTimeout(() => showResult(true), 2000); 
+                } else {
+                    playWrong();
+                    timeLeft = Math.max(0, timeLeft - 2);
+                    updateTimerUI();
+                }
+            }
+        }
+
+        // ==================================================
+        // GAME 4: TRÍ NHỚ SAN HÔ
+        // ==================================================
+        function initGame4(canvas, level) {
+            let pairsCount = level === 1 ? 2 : (level === 2 ? 3 : 4);
+            targetScore = pairsCount;
+            let timeLimit = level === 1 ? 15 : (level === 2 ? 20 : 25);
+            startGameLoop(timeLimit);
+            
+            const allIcons = ['🐠', '🐙', '🦀', '🐬', '🐡', '🦞'];
+            let deck = [];
+            for(let i = 0; i < pairsCount; i++) { deck.push(allIcons[i], allIcons[i]); }
+            deck.sort(() => Math.random() - 0.5);
+
+            let colsClass = pairsCount <= 2 ? 2 : 4;
+
+            canvas.innerHTML = `
+                <div class="absolute top-4 text-orange-800 font-black text-2xl bg-white/50 px-6 py-1 rounded-full">Lật thẻ tìm các cặp giống nhau nhé!</div>
+                <div class="grid grid-cols-${colsClass} gap-6 w-3/4 max-w-4xl h-[60%] m-auto mt-20" id="memory-board"></div>
+            `;
+            
+            const board = document.getElementById('memory-board');
+            let hasFlippedCard = false, lockBoard = false;
+            let firstCard, secondCard;
+
+            deck.forEach((item) => {
+                let card = document.createElement('div');
+                card.className = 'memory-card w-full h-full min-h-[120px] max-h-[180px]';
+                card.innerHTML = `<div class="memory-card-inner"><div class="memory-card-front">${item}</div><div class="memory-card-back">?</div></div>`;
+                card.dataset.val = item;
+                
+                card.onclick = function() {
+                    if (lockBoard || this === firstCard) return;
+                    playPop();
+                    this.classList.add('flipped');
+                    if (!hasFlippedCard) { hasFlippedCard = true; firstCard = this; return; }
+                    secondCard = this; checkForMatch();
+                };
+                board.appendChild(card);
+            });
+
+            function checkForMatch() {
+                let isMatch = firstCard.dataset.val === secondCard.dataset.val;
+                isMatch ? disableCards() : unflipCards();
+            }
+
+            function disableCards() {
+                firstCard.onclick = null; secondCard.onclick = null;
+                score++; document.getElementById('game-score').innerText = score;
+                resetBoard();
+                if(score === targetScore) setTimeout(()=>showResult(true), 1000);
+            }
+
+            function unflipCards() {
+                lockBoard = true;
+                setTimeout(() => {
+                    firstCard.classList.remove('flipped'); secondCard.classList.remove('flipped');
+                    resetBoard();
+                }, 800); 
+            }
+
+            function resetBoard() { [hasFlippedCard, lockBoard] = [false, false]; [firstCard, secondCard] = [null, null]; }
+        }
+
+        // ==================================================
+        // GAME 5: TRẮC NGHIỆM KIẾN THỨC (JSON ĐỘNG)
+        // ==================================================
+        const quizData = [
+            // Cấp độ 1
+            { level: 1, q: "Nước biển trong tranh có màu gì?", options: ["Xanh dương", "Màu đỏ"], ans: 0 },
+            { level: 1, q: "Mặt trời giúp nước biển trở nên sáng hay tối?", options: ["Sáng lấp lánh", "Tối đen"], ans: 0 },
+            { level: 1, q: "Nước ở gần bờ thường có màu như thế nào?", options: ["Đậm hơn", "Nhạt và trong"], ans: 1 },
+            { level: 1, q: "Sóng biển có làm mặt nước chuyển động không?", options: ["Có chứ", "Không hề"], ans: 0 },
+            { level: 1, q: "Có các sinh vật nhỏ sống dưới biển không?", options: ["Có rất nhiều", "Không có đâu"], ans: 0 },
+            
+            // Cấp độ 2
+            { level: 2, q: "Nước biển giống như vật gì phản chiếu bầu trời?", options: ["Cái áo", "Cái gương khổng lồ"], ans: 1 },
+            { level: 2, q: "Nước càng sâu thì màu xanh càng...?", options: ["Nhạt đi", "Đậm hơn"], ans: 1 },
+            { level: 2, q: "Bầu trời nắng xanh sẽ làm nước biển ra sao?", options: ["Xanh rực rỡ hơn", "Trở nên màu xám"], ans: 0 },
+            { level: 2, q: "Ánh sáng chiếu xuống biển đến từ đâu?", options: ["Ngọn đèn", "Mặt trời"], ans: 1 },
+            { level: 2, q: "Khi trời mưa nhiều mây đen, nước biển sẽ thế nào?", options: ["Tối xám lại", "Xanh lấp lánh"], ans: 0 },
+            
+            // Cấp độ 3
+            { level: 3, q: "Vì sao ta thấy biển màu xanh?", options: ["Phản xạ ánh sáng xanh", "Do nước có pha sơn"], ans: 0 },
+            { level: 3, q: "Các sinh vật li ti có làm đổi màu nước không?", options: ["Không ảnh hưởng", "Có làm đổi màu"], ans: 1 },
+            { level: 3, q: "Nếu không ánh sáng mặt trời, đại dương sẽ thế nào?", options: ["Vẫn màu xanh", "Tối đen như mực"], ans: 1 },
+            { level: 3, q: "Màu sắc của biển có thay đổi khi có sóng không?", options: ["Có thay đổi", "Luôn giữ nguyên"], ans: 0 },
+            { level: 3, q: "Múc 1 cốc nước biển lên, màu có giống ngoài khơi không?", options: ["Không giống", "Giống y hệt"], ans: 0 }
+        ];
+
+        function initGame5(canvas, level) {
+            let questions = quizData.filter(q => q.level === level);
+            targetScore = questions.length; 
+            let currentQ = 0;
+            
+            let timeLimit = level === 1 ? 60 : (level === 2 ? 45 : 30);
+            startGameLoop(timeLimit);
+
+            window.renderQuestion = function() {
+                if (currentQ >= targetScore) {
+                    showQuizSummary(); 
+                    return;
+                }
+
+                let q = questions[currentQ];
+                
+                canvas.innerHTML = `
+                    <div class="flex flex-col items-center justify-center w-full h-full max-w-4xl mx-auto px-4 gap-8 fade-in" id="quiz-box">
+                        <div class="w-full flex justify-between text-orange-600 font-bold mb-2">
+                            <span>Câu hỏi ${currentQ + 1} / ${targetScore}</span>
+                            <span>Đúng: ${score}</span>
+                        </div>
+                        <div class="w-full bg-white p-8 rounded-3xl shadow-xl border-b-8 border-orange-300 text-center">
+                            <h2 class="text-4xl font-black text-slate-800 leading-tight">${q.q}</h2>
+                        </div>
+                        
+                        <div class="w-full grid grid-cols-2 gap-6 mt-4">
+                            <button onclick="checkGame5(0, ${q.ans})" class="ans-btn p-8 bg-blue-50 hover:bg-blue-100 text-blue-800 font-black text-3xl rounded-3xl border-4 border-blue-200 shadow-md transition hover:scale-105 active:scale-95">${q.options[0]}</button>
+                            <button onclick="checkGame5(1, ${q.ans})" class="ans-btn p-8 bg-green-50 hover:bg-green-100 text-green-800 font-black text-3xl rounded-3xl border-4 border-green-200 shadow-md transition hover:scale-105 active:scale-95">${q.options[1]}</button>
+                        </div>
+                    </div>
+                    <div id="local-fireworks" class="absolute inset-0 pointer-events-none z-10"></div>
+                `;
+            }
+
+            window.checkGame5 = function(selectedIdx, correctIdx) {
+                const btns = document.querySelectorAll('.ans-btn');
+                btns.forEach(b => b.disabled = true);
+
+                if (selectedIdx === correctIdx) {
+                    playPop();
+                    playWin(); 
+                    clapAudio.currentTime = 0; 
+                    const clapPromise = clapAudio.play();
+                    if(clapPromise !== undefined) clapPromise.catch(e=>console.log(e));
+                    createFireworks('local-fireworks');
+                    btns[selectedIdx].classList.add('bg-green-400', 'text-white', 'border-green-600');
+                    
+                    score++; document.getElementById('game-score').innerText = score;
+                    
+                    setTimeout(() => {
+                        currentQ++;
+                        renderQuestion();
+                    }, 4000); 
+                } else {
+                    playWrong();
+                    timeLeft = Math.max(0, timeLeft - 5);
+                    updateTimerUI();
+                    btns[selectedIdx].classList.add('bg-red-400', 'text-white', 'border-red-600');
+                    
+                    setTimeout(() => {
+                        btns[selectedIdx].classList.remove('bg-red-400', 'text-white', 'border-red-600');
+                        btns.forEach(b => b.disabled = false);
+                    }, 3000);
+                }
+            }
+
+            renderQuestion();
+        }
+
+    </script>
+</body>
+</html>

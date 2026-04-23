@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="vi" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Khung Chương Trình Sunbot Camp - Light Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --brand-orange: #ea580c;
+            --brand-orange-light: #fff7ed;
+            --bg-light: #f8fafc;
+            --slide-width: 297mm;
+            --slide-height: 209.5mm; 
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9;
+            color: #1e293b;
+            -webkit-font-smoothing: antialiased;
+            margin: 0; padding: 0;
+            overflow-x: hidden;
+        }
+
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #ea580c; border-radius: 10px; }
+
+        h1, h2, h3, h4, h5, h6 { 
+            line-height: 1.5 !important; 
+            padding-top: 0.1em;
+            padding-bottom: 0.1em;
+        }
+
+        .text-gradient-orange { 
+            background: linear-gradient(to bottom right, #f97316, #c2410c); 
+            -webkit-background-clip: text; 
+            background-clip: text; 
+            -webkit-text-fill-color: transparent; 
+            color: transparent;
+            display: inline-block;
+            padding-top: 0.15em;
+            padding-bottom: 0.15em;
+        }
+
+        /* --- CONTROLS --- */
+        .floating-controls { position: fixed; top: 20px; right: 20px; z-index: 100; display: flex; gap: 12px; }
+        .btn-action { padding: 10px 24px; border-radius: 14px; font-weight: 800; font-size: 13px; cursor: pointer; transition: all 0.3s; display: inline-flex; align-items: center; gap: 8px; border: none; outline: none; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);}
+        .btn-orange { background: #ea580c; color: white; }
+        .btn-orange:hover { transform: translateY(-2px); background: #c2410c; box-shadow: 0 15px 25px -5px rgba(234,88,12,0.3); }
+
+        /* --- DECK STRUCTURE --- */
+        .deck-wrapper { display: flex; flex-direction: column; align-items: center; gap: 40px; padding: 80px 20px 40px 20px; width: 100%; }
+
+        .slide-page {
+            width: var(--slide-width); height: var(--slide-height); 
+            background: #ffffff;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08);
+            position: relative; box-sizing: border-box; padding: 14mm 20mm; 
+            display: flex; flex-direction: column; z-index: 10; border-radius: 24px; 
+            overflow: hidden; flex-shrink: 0;
+            border: 1px solid #e2e8f0;
+        }
+
+        .slide-page.cover-page { 
+            background: radial-gradient(circle at center, #ffffff 0%, #fff7ed 100%);
+            justify-content: center; 
+        }
+
+        .glow-orange { position: absolute; background: #fb923c; border-radius: 50%; filter: blur(100px); opacity: 0.12; pointer-events: none; z-index: 0;}
+        .glow-blue { position: absolute; background: #60a5fa; border-radius: 50%; filter: blur(100px); opacity: 0.08; pointer-events: none; z-index: 0;}
+
+        /* --- HEADER & FOOTER --- */
+        .slide-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #fff7ed; padding-bottom: 12px; margin-bottom: 24px; z-index: 10; }
+        .slide-header-title { font-size: 16px; font-weight: 800; color: #ea580c; text-transform: uppercase; letter-spacing: 0.05em; }
+        .slide-footer { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: auto; padding-top: 12px; border-top: 1px solid #f1f5f9; z-index: 10; }
+
+        /* --- TYPOGRAPHY & CARDS --- */
+        .deck-title { font-size: 34px; font-weight: 900; color: #0f172a; text-transform: uppercase; letter-spacing: -0.02em; margin-bottom: 8px; z-index: 10;}
+        .deck-subtitle { font-size: 16px; font-weight: 500; color: #64748b; margin-bottom: 24px; z-index: 10; line-height: 1.5;}
+        
+        .card-3d { 
+            background: #ffffff; 
+            border: 1px solid #f1f5f9; 
+            border-radius: 20px; 
+            box-shadow: 0 10px 20px -5px rgba(0,0,0,0.04); 
+            z-index: 10; flex: 1; display: flex; flex-direction: column;
+            transition: all 0.3s ease;
+        }
+        .card-3d:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(234, 88, 12, 0.1);
+            border-color: #fed7aa;
+        }
+
+        .lesson-icon {
+            width: 48px; height: 48px; border-radius: 12px; object-fit: cover;
+            border: 2px solid #fff7ed;
+            box-shadow: 0 8px 15px -3px rgba(234, 88, 12, 0.1);
+            background: #fff;
+            flex-shrink: 0;
+        }
+
+        /* --- MATRIX ANIMATION STYLES (SLIDE 6) --- */
+        .mix-btn { transition: all 0.2s ease; cursor: pointer; }
+        .mix-btn.active { background-color: #ea580c; color: white; border-color: #ea580c; box-shadow: 0 4px 10px 0 rgba(234, 88, 12, 0.3); }
+        .mix-btn:hover:not(.active) { background-color: #fff7ed; border-color: #fb923c; }
+        
+        .matrix-card { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); transform-origin: center center; position: relative; }
+        .matrix-card.inactive { opacity: 0.1; transform: scale(0.9); filter: grayscale(100%); pointer-events: none; }
+        .matrix-card.active-highlight { box-shadow: 0 0 0 2px #ea580c, 0 10px 25px -5px rgba(234, 88, 12, 0.3); transform: scale(1.05); z-index: 20; background: #fffaf0;}
+        
+        .info-panel { transition: all 0.4s ease; opacity: 0; transform: translateY(10px); display: none;}
+        .info-panel.show { opacity: 1; transform: translateY(0); display: flex;}
+
+        /* --- TIME PROGRESS BARS (SLIDE 7) --- */
+        .time-bar-wrapper { display: flex; height: 32px; border-radius: 16px; overflow: hidden; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); width: 100%;}
+        .tb-segment { display: flex; align-items: center; justify-content: center; color: white; font-size: 11px; font-weight: 800; letter-spacing: 0.5px;}
+
+        /* --- PRINT STYLES --- */
+        @media print {
+            body { background: white !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            .no-print { display: none !important; }
+            .deck-wrapper { display: block !important; padding: 0 !important; margin: 0 !important;}
+            .slide-page { 
+                box-shadow: none !important; border: none !important;
+                margin: 0 !important; width: 297mm !important; height: 209.5mm !important; 
+                padding: 12mm 18mm !important; border-radius: 0 !important; 
+                page-break-after: always !important; page-break-inside: avoid !important; 
+            }
+            .matrix-card { opacity: 1 !important; transform: scale(1) !important; filter: none !important; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05) !important; border: 1px solid #f1f5f9 !important; background: white !important;}
+            #package-info-container, #filter-controls { display: none !important; }
+        }
+        @page { size: A4 landscape; margin: 0; }
+    </style>
+</head>
+<body>
+
+    <div class="floating-controls no-print">
+        <button onclick="window.print()" class="btn-action btn-orange">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+            In / Xuất PDF (A4 Ngang)
+        </button>
+    </div>
+
+    <div class="deck-wrapper">
+        
+        <!-- SLIDE 1: COVER -->
+        <div class="slide-page cover-page">
+            <div class="glow-orange w-[800px] h-[800px] -top-20 -right-20"></div>
+            <div class="glow-blue w-[600px] h-[600px] -bottom-20 -left-20"></div>
+            
+            <div class="flex-grow flex flex-col justify-center items-center text-center relative z-10 w-full h-full">
+                <img src="assets/img/logo-sunbot.png" alt="Sunbot Logo" class="h-24 mb-10 drop-shadow-sm" onerror="this.src='https://placehold.co/200x60/transparent/ea580c?text=SUNBOT'"/>
+                
+                <h1 class="text-[56px] font-black text-slate-900 leading-[1.1] mb-6 uppercase tracking-tight">
+                    GIÁO ÁN ĐẶC BIỆT<br>SUNBOT CAMP<br>
+                    <span class="text-gradient-orange mt-2 block">BẢN SẮC & CHỦ QUYỀN VIỆT NAM</span>
+                </h1>
+                
+                <p class="text-orange-600 font-extrabold uppercase tracking-[0.2em] mb-8 text-sm">Chương Trình Chuyên Biệt Cho Lứa Tuổi Mầm Non & Tiểu Học (4-11 Tuổi)</p>
+
+                <div class="flex items-center gap-6 mt-4">
+                    <span class="bg-orange-100 text-orange-700 px-6 py-2 rounded-2xl text-xs font-black uppercase tracking-wider">3 Chủ Đề Lớn</span>
+                    <span class="bg-blue-100 text-blue-700 px-6 py-2 rounded-2xl text-xs font-black uppercase tracking-wider">18 Modules Gốc</span>
+                    <span class="bg-emerald-100 text-emerald-700 px-6 py-2 rounded-2xl text-xs font-black uppercase tracking-wider">STEAM 4.0</span>
+                </div>
+            </div>
+            
+            <div class="slide-footer flex justify-center items-center w-full border-t border-slate-100 pt-4">
+                <span class="text-slate-400 font-bold uppercase tracking-widest text-[11px]">Công Ty Cổ Phần Công Nghệ Giáo Dục Kiro Việt Nam</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: TỔNG QUAN -->
+        <div class="slide-page">
+            <div class="glow-orange w-[500px] h-[500px] -top-40 -left-40"></div>
+            <div class="slide-header">
+                <div class="slide-header-title">Tổng Quan Chương Trình</div>
+                <img src="assets/img/logo-sunbot.png" class="h-6 grayscale opacity-30" onerror="this.style.display='none'"/>
+            </div>
+            
+            <div class="flex-grow flex flex-col justify-center relative z-10 w-full">
+                <div class="text-center mb-10">
+                    <h2 class="deck-title">KIẾN TẠO THẾ HỆ YÊU NƯỚC THÔNG MINH</h2>
+                    <p class="deck-subtitle max-w-3xl mx-auto">Chương trình tích hợp Lập trình Robotics & STEAM, thiết kế linh hoạt cho bậc Mầm non (Khám phá) và Tiểu học (Giải quyết vấn đề).</p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-8 pb-6">
+                    <div class="card-3d !p-7 border-t-4 border-orange-500">
+                        <h3 class="text-[17px] font-black text-slate-800 uppercase mb-3 flex items-center gap-3"><span class="text-2xl">🎯</span> Mục Tiêu Cốt Lõi</h3>
+                        <p class="text-[14px] text-slate-600 leading-relaxed m-0">Xây dựng ý thức <strong>Chủ quyền & Bản sắc</strong> thông qua trải nghiệm thực tế. Trẻ không chỉ học lịch sử, mà còn "nhập vai" vào lịch sử để thấu hiểu giá trị dân tộc.</p>
+                    </div>
+                    <div class="card-3d !p-7 border-t-4 border-blue-500">
+                        <h3 class="text-[17px] font-black text-slate-800 uppercase mb-3 flex items-center gap-3"><span class="text-2xl">🤖</span> Phương Pháp Sunbot-STEAM</h3>
+                        <p class="text-[14px] text-slate-600 leading-relaxed m-0">Sử dụng Robot Sunbot để <strong>Lập trình điều hướng</strong> kết hợp chế tạo mô hình <strong>STEAM</strong>. Khuyến khích tư duy phản biện và kỹ năng 4C (Sáng tạo, Hợp tác, Giao tiếp, Phê phán).</p>
+                    </div>
+                    <div class="card-3d !p-7 border-t-4 border-emerald-500">
+                        <h3 class="text-[17px] font-black text-slate-800 uppercase mb-3 flex items-center gap-3"><span class="text-2xl">📦</span> Lộ Trình Phân Cấp</h3>
+                        <p class="text-[14px] text-slate-600 leading-relaxed m-0"><strong>Mầm non (4-6t):</strong> Tập trung vào nhận diện, vận động và cảm xúc. <br><strong>Tiểu học (7-11t):</strong> Tập trung thuật toán, cơ chế máy móc và ứng dụng công nghệ giải quyết bài toán lịch sử.</p>
+                    </div>
+                    <div class="card-3d !p-7 border-t-4 border-purple-500">
+                        <h3 class="text-[17px] font-black text-slate-800 uppercase mb-3 flex items-center gap-3"><span class="text-2xl">🚀</span> Kết Quả Đầu Ra</h3>
+                        <p class="text-[14px] text-slate-600 leading-relaxed m-0">Trẻ tự tin thuyết trình về các địa danh, nắm vững logic lập trình cơ bản và có khả năng sáng tạo ra các sản phẩm thủ công có tính ứng dụng công nghệ (động cơ, đèn LED...).</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="slide-footer">
+                <img src="assets/img/logo-sunbot.png" class="h-4 grayscale opacity-40" onerror="this.style.display='none'"/>
+                <span class="text-slate-400 font-bold uppercase tracking-widest text-[10px]">Trang 02 / 08</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: CHỦ ĐỀ 1 -->
+        <div class="slide-page">
+            <div class="slide-header">
+                <div class="slide-header-title">CHỦ ĐỀ 1: LỊCH SỬ & CHỦ QUYỀN QUỐC GIA</div>
+                <div class="flex items-center gap-2">
+                    <span class="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-[10px] font-bold">KHÁM PHÁ</span>
+                    <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-[10px] font-bold">CHINH PHỤC</span>
+                </div>
+            </div>
+            <div class="flex-grow grid grid-cols-4 gap-4 pb-2 mt-4">
+                <div class="card-3d !p-4 flex flex-col h-full hover:border-orange-300">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex items-center gap-2">
+                            <div class="w-7 h-7 rounded-full bg-orange-600 text-white flex items-center justify-center font-black text-[11px]">01</div>
+                            <h4 class="font-black text-slate-800 text-[12px] uppercase leading-tight flex-1">Khởi Động</h4>
+                        </div>
+                        <img src="assets/img/icons/cd1-lesson1.png" class="lesson-icon" onerror="this.src='https://placehold.co/100/fff7ed/ea580c?text=🗺️'"/>
+                    </div>
+                    <div class="space-y-2 mb-3">
+                        <div class="bg-blue-50 rounded-lg p-2 border border-blue-100">
+                            <p class="text-[9px] text-blue-600 uppercase font-black mb-1">🤖 Sunbot</p>
+                            <p class="text-[11px] text-slate-800 font-bold m-0">Việt Nam Xinh Đẹp</p>
+                        </div>
+                        <div class="bg-orange-50 rounded-lg p-2 border border-orange-100">
+                            <p class="text-[9px] text-orange-600 uppercase font-black mb-1">⚙️ STEAM</p>
+                            <p class="text-[11px] text-slate-800 font-bold m-0">Quả Địa Cầu</p>
+                        </div>
+                    </div>
+                    <p class="text-[10px] text-slate-500 mt-auto border-t border-slate-100 pt-2 italic">Nhận diện bản đồ hình chữ S và vị trí trên địa cầu.</p>
+                </div>
+                
+                <div class="card-3d !p-4 flex flex-col h-full hover:border-orange-300">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex items-center gap-2">
+                            <div class="w-7 h-7 rounded-full bg-orange-600 text-white flex items-center justify-center font-black text-[11px]">02</div>
+                            <h4 class="font-black text-slate-800 text-[12px] uppercase leading-tight flex-1">Thủ Đô Hà Nội</h4>
+                        </div>
+                        <img src="assets/img/icons/cd1-lesson2.png" class="lesson-icon" onerror="this.src='https://placehold.co/100/fff7ed/ea580c?text=🏰'"/>
+                    </div>
+                    <div class="space-y-2 mb-3">
+                        <div class="bg-blue-50 rounded-lg p-2 border border-blue-100">
+                            <p class="text-[9px] text-blue-600 uppercase font-black mb-1">🤖 Sunbot</p>
+                            <p class="text-[11px] text-slate-800 font-bold m-0">Hành Trình Hồ Gươm</p>
+                        </div>
+                        <div class="bg-orange-50 rounded-lg p-2 border border-orange-100">
+                            <p class="text-[9px] text-orange-600 uppercase font-black mb-1">⚙️ STEAM</p>
+                            <p class="text-[11px] text-slate-800 font-bold m-0">Xe Thuyền Rồng</p>
+                        </div>
+                    </div>
+                    <p class="text-[10px] text-slate-500 mt-auto border-t border-slate-100 pt-2 italic">Lắp ráp mô hình chuyển động bánh răng thuyền rồng.</p>
+                </div>
+
+                <div class="card-3d !p-4 flex flex-col h-full hover:border-orange-300">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex items-center gap-2">
+                            <div class="w-7 h-7 rounded-full bg-orange-600 text-white flex items-center justify-center font-black text-[11px]">03</div>
+                            <h4 class="font-black text-slate-800 text-[12px] uppercase leading-tight flex-1">Cực Bắc Hà Giang</h4>
+                        </div>
+                        <img src="assets/img/icons/cd1-lesson3.png" class="lesson-icon" onerror="this.src='https://placehold.co/100/fff7ed/ea580c?text=🚩'"/>
+                    </div>
+                    <div class="space-y-2 mb-3">
+                        <div class="bg-blue-50 rounded-lg p-2 border border-blue-100">
+                            <p class="text-[9px] text-blue-600 uppercase font-black mb-1">🤖 Sunbot</p>
+                            <p class="text-[11px] text-slate-800 font-bold m-0">Chinh Phục Cao Nguyên</p>
+                        </div>
+                        <div class="bg-orange-50 rounded-lg p-2 border border-orange-100">
+                            <p class="text-[9px] text-orange-600 uppercase font-black mb-1">⚙️ STEAM</p>
+                            <p class="text-[11px] text-slate-800 font-bold m-0">Cột Cờ Lũng Cú</p>
+                        </div>
+                    </div>
+                    <p class="text-[10px] text-slate-500 mt-auto border-t border-slate-100 pt-2 italic">Thiết kế hệ ròng rọc kéo cờ linh thiêng tại cực Bắc.</p>
+                </div>
+
+                <div class="card-3d !p-4 flex flex-col h-full hover:border-orange-300">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex items-center gap-2">
+                            <div class="w-7 h-7 rounded-full bg-orange-600 text-white flex items-center justify-center font-black text-[11px]">04</div>
+                            <h4 class="font-black text-slate-800 text-[12px] uppercase leading-tight flex-1">Vịnh Hạ Long</h4>
+                        </div>
+                        <img src="assets/img/icons/cd1-lesson4.png" class="lesson-icon" onerror="this.src='https://placehold.co/100/fff7ed/ea580c?text=⛵'"/>
+                    </div>
+                    <div class="space-y-2 mb-3">
+                        <div class="bg-blue-50 rounded-lg p-2 border border-blue-100">
+                            <p class="text-[9px] text-blue-600 uppercase font-black mb-1">🤖 Sunbot</p>
+                            <p class="text-[11px] text-slate-800 font-bold m-0">Khám Phá Hang Động</p>
+                        </div>
+                        <div class="bg-orange-50 rounded-lg p-2 border border-orange-100">
+                            <p class="text-[9px] text-orange-600 uppercase font-black mb-1">⚙️ STEAM</p>
+                            <p class="text-[11px] text-slate-800 font-bold m-0">Thuyền Buồm Cân Bằng</p>
+                        </div>
+                    </div>
+                    <p class="text-[10px] text-slate-500 mt-auto border-t border-slate-100 pt-2 italic">Học về lực đẩy và sự cân bằng của thuyền trên biển.</p>
+                </div>
+
+                <div class="card-3d !p-4 flex flex-col h-full hover:border-orange-300">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex items-center gap-2">
+                            <div class="w-7 h-7 rounded-full bg-orange-600 text-white flex items-center justify-center font-black text-[11px]">05</div>
+                            <h4 class="font-black text-slate-800 text-[12px] uppercase leading-tight flex-1">Đà Nẵng Rực Rỡ</h4>
+                        </div>
+                        <img src="assets/img/icons/cd1-lesson5.png" class="lesson-icon" onerror="this.src='https://placehold.co/100/fff7ed/ea580c?text=🐉'"/>
+                    </div>
+                    <div class="space-y-2 mb-3">
+                        <div class="bg-blue-50 rounded-lg p-2 border border-blue-100">
+                            <p class="text-[9px] text-blue-600 uppercase font-black mb-1">🤖 Sunbot</p>
+                            <p class="text-[11px] text-slate-800 font-bold m-0">Đến Với Cầu Rồng</p>
+                        </div>
+                        <div class="bg-orange-50 rounded-lg p-2 border border-orange-100">
+                            <p class="text-[9px] text-orange-600 uppercase font-black mb-1">⚙️ STEAM</p>
+                            <p class="text-[11px] text-slate-800 font-bold m-0">Cầu Vòm Kỹ Thuật</p>
+                        </div>
+                    </div>
+                    <p class="text-[10px] text-slate-500 mt-auto border-t border-slate-100 pt-2 italic">Thử thách xây cầu không dùng keo (Leonardo Bridge).</p>
+                </div>
+
+                <div class="card-3d !p-4 flex flex-col h-full hover:border-orange-300">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex items-center gap-2">
+                            <div class="w-7 h-7 rounded-full bg-orange-600 text-white flex items-center justify-center font-black text-[11px]">06</div>
+                            <h4 class="font-black text-slate-800 text-[12px] uppercase leading-tight flex-1">Giải Phóng Miền Nam</h4>
+                        </div>
+                        <img src="assets/img/icons/cd1-lesson6.png" class="lesson-icon" onerror="this.src='https://placehold.co/100/fff7ed/ea580c?text=🚜'"/>
+                    </div>
+                    <div class="space-y-2 mb-3">
+                        <div class="bg-blue-50 rounded-lg p-2 border border-blue-100">
+                            <p class="text-[9px] text-blue-600 uppercase font-black mb-1">🤖 Sunbot</p>
+                            <p class="text-[11px] text-slate-800 font-bold m-0">Tiến Vào Dinh Độc Lập</p>
+                        </div>
+                        <div class="bg-orange-50 rounded-lg p-2 border border-orange-100">
+                            <p class="text-[9px] text-orange-600 uppercase font-black mb-1">⚙️ STEAM</p>
+                            <p class="text-[11px] text-slate-800 font-bold m-0">Xe Tăng Phản Lực</p>
+                        </div>
+                    </div>
+                    <p class="text-[10px] text-slate-500 mt-auto border-t border-slate-100 pt-2 italic">Ứng dụng phản lực không khí để xe tank di chuyển.</p>
+                </div>
+
+                <div class="card-3d !p-4 flex flex-col h-full hover:border-orange-500 border-2 border-orange-200">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex items-center gap-2">
+                            <div class="w-7 h-7 rounded-full bg-orange-600 text-white flex items-center justify-center font-black text-[11px]">07</div>
+                            <h4 class="font-black text-slate-800 text-[12px] uppercase leading-tight flex-1">Biển Đảo Tổ Quốc</h4>
+                        </div>
+                        <img src="assets/img/icons/cd1-lesson7.png" class="lesson-icon" onerror="this.src='https://placehold.co/100/fff7ed/ea580c?text=⚓'"/>
+                    </div>
+                    <div class="space-y-2 mb-3">
+                        <div class="bg-blue-50 rounded-lg p-2 border border-blue-100">
+                            <p class="text-[9px] text-blue-600 uppercase font-black mb-1">🤖 Sunbot</p>
+                            <p class="text-[11px] text-slate-800 font-bold m-0">Tuần Tra Trường Sa</p>
+                        </div>
+                        <div class="bg-orange-50 rounded-lg p-2 border border-orange-100">
+                            <p class="text-[9px] text-orange-600 uppercase font-black mb-1">⚙️ STEAM</p>
+                            <p class="text-[11px] text-slate-800 font-bold m-0">Tàu Ngầm Áp Suất</p>
+                        </div>
+                    </div>
+                    <p class="text-[10px] text-slate-500 mt-auto border-t border-slate-100 pt-2 italic">Thí nghiệm về áp suất nước và nguyên lý tàu ngầm.</p>
+                </div>
+
+                <div class="card-3d !p-4 flex flex-col h-full bg-orange-500 justify-center items-center text-center shadow-lg">
+                    <div class="text-5xl mb-3">🇻🇳</div>
+                    <p class="text-[14px] font-black text-white uppercase tracking-widest leading-snug">Vì Một Việt Nam<br>Vững Mạnh</p>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <img src="assets/img/logo-sunbot.png" class="h-4 grayscale opacity-40" onerror="this.style.display='none'"/>
+                <span class="text-slate-400 font-bold uppercase tracking-widest text-[10px]">Trang 03 / 08</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: CHỦ ĐỀ 2 -->
+        <div class="slide-page">
+            <div class="slide-header">
+                <div class="slide-header-title">CHỦ ĐỀ 2: TINH HOA LÀNG NGHỀ TRUYỀN THỐNG</div>
+                <div class="flex items-center gap-2">
+                    <span class="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-[10px] font-bold">KỸ NĂNG</span>
+                    <span class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-[10px] font-bold">SÁNG TẠO</span>
+                </div>
+            </div>
+            <div class="flex-grow grid grid-cols-4 gap-4 pb-2 mt-4">
+                <div class="card-3d !p-4 flex flex-col h-full hover:border-orange-300">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex items-center gap-2">
+                            <div class="w-7 h-7 rounded-full bg-orange-600 text-white flex items-center justify-center font-black text-[11px]">08</div>
+                            <h4 class="font-black text-slate-800 text-[12px] uppercase leading-tight flex-1">Nghề Thêu Dệt</h4>
+                        </div>
+                        <img src="assets/img/icons/cd2-lesson1.png" class="lesson-icon" onerror="this.src='https://placehold.co/100/fff7ed/ea580c?text=🧶'"/>
+                    </div>
+                    <div class="space-y-2 mb-3">
+                        <div class="bg-blue-50 rounded-lg p-2 border border-blue-100">
+                            <p class="text-[9px] text-blue-600 uppercase font-black mb-1">🤖 Sunbot</p>
+                            <p class="text-[11px] text-slate-800 font-bold m-0">Làng Nghề Thêu</p>
+                        </div>
+                        <div class="bg-orange-50 rounded-lg p-2 border border-orange-100">
+                            <p class="text-[9px] text-orange-600 uppercase font-black mb-1">⚙️ STEAM</p>
+                            <p class="text-[11px] text-slate-800 font-bold m-0">Thực Hành Thêu</p>
+                        </div>
+                    </div>
+                    <p class="text-[10px] text-slate-500 mt-auto border-t border-slate-100 pt-2 italic">Rèn luyện vận động tinh qua kim thêu an toàn cho trẻ.</p>
+                </div>
+
+                <div class="card-3d !p-4 flex flex-col h-full hover:border-orange-300">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex items-center gap-2">
+                            <div class="w-7 h-7 rounded-full bg-orange-600 text-white flex items-center justify-center font-black text-[11px]">09</div>
+                            <h4 class="font-black text-slate-800 text-[12px] uppercase leading-tight flex-1">Gốm Bát Tràng</h4>
+                        </div>
+                        <img src="assets/img/icons/cd2-lesson2.png" class="lesson-icon" onerror="this.src='https://placehold.co/100/fff7ed/ea580c?text=🏺'"/>
+                    </div>
+                    <div class="space-y-2 mb-3">
+                        <div class="bg-blue-50 rounded-lg p-2 border border-blue-100">
+                            <p class="text-[9px] text-blue-600 uppercase font-black mb-1">🤖 Sunbot</p>
+                            <p class="text-[11px] text-slate-800 font-bold m-0">Xưởng Gốm Nhỏ</p>
+                        </div>
+                        <div class="bg-orange-50 rounded-lg p-2 border border-orange-100">
+                            <p class="text-[9px] text-orange-600 uppercase font-black mb-1">⚙️ STEAM</p>
+                            <p class="text-[11px] text-slate-800 font-bold m-0">Bàn Xoay Động Cơ</p>
+                        </div>
+                    </div>
+                    <p class="text-[10px] text-slate-500 mt-auto border-t border-slate-100 pt-2 italic">Xây dựng mô hình bàn xoay gốm sử dụng mô tơ điện cơ bản.</p>
+                </div>
+
+                <div class="card-3d !p-4 flex flex-col h-full hover:border-orange-300">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex items-center gap-2">
+                            <div class="w-7 h-7 rounded-full bg-orange-600 text-white flex items-center justify-center font-black text-[11px]">10</div>
+                            <h4 class="font-black text-slate-800 text-[12px] uppercase leading-tight flex-1">Lụa Vạn Phúc</h4>
+                        </div>
+                        <img src="assets/img/icons/cd2-lesson3.png" class="lesson-icon" onerror="this.src='https://placehold.co/100/fff7ed/ea580c?text=👗'"/>
+                    </div>
+                    <div class="space-y-2 mb-3">
+                        <div class="bg-blue-50 rounded-lg p-2 border border-blue-100">
+                            <p class="text-[9px] text-blue-600 uppercase font-black mb-1">🤖 Sunbot</p>
+                            <p class="text-[11px] text-slate-800 font-bold m-0">Chuyện Con Tằm</p>
+                        </div>
+                        <div class="bg-orange-50 rounded-lg p-2 border border-orange-100">
+                            <p class="text-[9px] text-orange-600 uppercase font-black mb-1">⚙️ STEAM</p>
+                            <p class="text-[11px] text-slate-800 font-bold m-0">Máy Quay Sợi</p>
+                        </div>
+                    </div>
+                    <p class="text-[10px] text-slate-500 mt-auto border-t border-slate-100 pt-2 italic">Mô phỏng cơ chế chuyển động quay tròn của máy dệt.</p>
+                </div>
+
+                <div class="card-3d !p-4 flex flex-col h-full hover:border-orange-300">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex items-center gap-2">
+                            <div class="w-7 h-7 rounded-full bg-orange-600 text-white flex items-center justify-center font-black text-[11px]">11</div>
+                            <h4 class="font-black text-slate-800 text-[12px] uppercase leading-tight flex-1">Mây Tre Đan</h4>
+                        </div>
+                        <img src="assets/img/icons/cd2-lesson4.png" class="lesson-icon" onerror="this.src='https://placehold.co/100/fff7ed/ea580c?text=🧺'"/>
+                    </div>
+                    <div class="space-y-2 mb-3">
+                        <div class="bg-blue-50 rounded-lg p-2 border border-blue-100">
+                            <p class="text-[9px] text-blue-600 uppercase font-black mb-1">🤖 Sunbot</p>
+                            <p class="text-[11px] text-slate-800 font-bold m-0">Nghệ Nhân Làng</p>
+                        </div>
+                        <div class="bg-orange-50 rounded-lg p-2 border border-orange-100">
+                            <p class="text-[9px] text-orange-600 uppercase font-black mb-1">⚙️ STEAM</p>
+                            <p class="text-[11px] text-slate-800 font-bold m-0">Đan Nong Mốt</p>
+                        </div>
+                    </div>
+                    <p class="text-[10px] text-slate-500 mt-auto border-t border-slate-100 pt-2 italic">Làm quen với cấu trúc vật liệu và kỹ thuật đan nan.</p>
+                </div>
+
+                <div class="card-3d !p-4 flex flex-col h-full hover:border-orange-300">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex items-center gap-2">
+                            <div class="w-7 h-7 rounded-full bg-orange-600 text-white flex items-center justify-center font-black text-[11px]">12</div>
+                            <h4 class="font-black text-slate-800 text-[12px] uppercase leading-tight flex-1">Quạt Chàng Sơn</h4>
+                        </div>
+                        <img src="assets/img/icons/cd2-lesson5.png" class="lesson-icon" onerror="this.src='https://placehold.co/100/fff7ed/ea580c?text=🎋'"/>
+                    </div>
+                    <div class="space-y-2 mb-3">
+                        <div class="bg-blue-50 rounded-lg p-2 border border-blue-100">
+                            <p class="text-[9px] text-blue-600 uppercase font-black mb-1">🤖 Sunbot</p>
+                            <p class="text-[11px] text-slate-800 font-bold m-0">Làn Gió Mát</p>
+                        </div>
+                        <div class="bg-orange-50 rounded-lg p-2 border border-orange-100">
+                            <p class="text-[9px] text-orange-600 uppercase font-black mb-1">⚙️ STEAM</p>
+                            <p class="text-[11px] text-slate-800 font-bold m-0">Quạt Giấy Sáng Tạo</p>
+                        </div>
+                    </div>
+                    <p class="text-[10px] text-slate-500 mt-auto border-t border-slate-100 pt-2 italic">Thiết kế quạt với trang trí họa tiết dân gian truyền thống.</p>
+                </div>
+
+                <div class="card-3d !p-4 flex flex-col h-full hover:border-orange-300">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex items-center gap-2">
+                            <div class="w-7 h-7 rounded-full bg-orange-600 text-white flex items-center justify-center font-black text-[11px]">13</div>
+                            <h4 class="font-black text-slate-800 text-[12px] uppercase leading-tight flex-1">Mặt Nạ Giấy Bồi</h4>
+                        </div>
+                        <img src="assets/img/icons/cd2-lesson6.png" class="lesson-icon" onerror="this.src='https://placehold.co/100/fff7ed/ea580c?text=👺'"/>
+                    </div>
+                    <div class="space-y-2 mb-3">
+                        <div class="bg-blue-50 rounded-lg p-2 border border-blue-100">
+                            <p class="text-[9px] text-blue-600 uppercase font-black mb-1">🤖 Sunbot</p>
+                            <p class="text-[11px] text-slate-800 font-bold m-0">Lễ Hội Mặt Nạ</p>
+                        </div>
+                        <div class="bg-orange-50 rounded-lg p-2 border border-orange-100">
+                            <p class="text-[9px] text-orange-600 uppercase font-black mb-1">⚙️ STEAM</p>
+                            <p class="text-[11px] text-slate-800 font-bold m-0">Tạo Hình Giấy Bồi</p>
+                        </div>
+                    </div>
+                    <p class="text-[10px] text-slate-500 mt-auto border-t border-slate-100 pt-2 italic">Học cách làm khuôn và bồi giấy nghệ thuật dân gian.</p>
+                </div>
+
+                <div class="card-3d !p-4 flex flex-col h-full border-2 border-dashed border-emerald-400 bg-emerald-50 text-center justify-center">
+                    <span class="text-4xl mb-2">🖼️</span>
+                    <h4 class="font-black text-emerald-700 text-[12px] uppercase">Triển Lãm Làng Nghề</h4>
+                    <p class="text-[10px] text-slate-500 mt-1">Trưng bày & Báo cáo</p>
+                </div>
+
+                <div class="card-3d !p-4 flex flex-col h-full bg-slate-50 justify-center items-center text-center shadow-inner">
+                    <div class="text-4xl mb-2">🏺</div>
+                    <p class="text-[12px] font-black text-slate-500 uppercase tracking-widest">Gìn Giữ<br>Tinh Hoa</p>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <img src="assets/img/logo-sunbot.png" class="h-4 grayscale opacity-40" onerror="this.style.display='none'"/>
+                <span class="text-slate-400 font-bold uppercase tracking-widest text-[10px]">Trang 04 / 08</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: CHỦ ĐỀ 3 -->
+        <div class="slide-page">
+            <div class="slide-header">
+                <div class="slide-header-title">CHỦ ĐỀ 3: BẢN SẮC VĂN HÓA & HỘI NHẬP</div>
+                <div class="flex items-center gap-2">
+                    <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-[10px] font-bold">CẢM THỤ</span>
+                    <span class="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-[10px] font-bold">HỘI NHẬP</span>
+                </div>
+            </div>
+            <div class="flex-grow grid grid-cols-3 gap-6 pb-2 mt-4">
+                <div class="card-3d !p-4 flex flex-col h-full hover:border-orange-300">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-orange-600 text-white flex items-center justify-center font-black text-[12px]">14</div>
+                            <h4 class="font-black text-slate-800 text-[14px] uppercase leading-tight flex-1">Trang Phục 3 Miền</h4>
+                        </div>
+                        <img src="assets/img/icons/cd3-lesson1.png" class="lesson-icon" onerror="this.src='https://placehold.co/100/fff7ed/ea580c?text=👚'"/>
+                    </div>
+                    <div class="space-y-2 mb-3">
+                        <div class="bg-blue-50 rounded-lg p-2 border border-blue-100">
+                            <p class="text-[10px] text-blue-600 uppercase font-black mb-1">🤖 Sunbot</p>
+                            <p class="text-[12px] text-slate-800 font-bold m-0">Tìm Hiểu Trang Phục</p>
+                        </div>
+                        <div class="bg-orange-50 rounded-lg p-2 border border-orange-100">
+                            <p class="text-[10px] text-orange-600 uppercase font-black mb-1">⚙️ STEAM</p>
+                            <p class="text-[12px] text-slate-800 font-bold m-0">Nón Lá Đèn LED</p>
+                        </div>
+                    </div>
+                    <p class="text-[11px] text-slate-500 mt-auto border-t border-slate-100 pt-3 italic">Khám phá Áo Dài, Áo Bà Ba, Áo Tứ Thân. Thiết kế nón lá phát sáng.</p>
+                </div>
+
+                <div class="card-3d !p-4 flex flex-col h-full hover:border-orange-300">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-orange-600 text-white flex items-center justify-center font-black text-[12px]">15</div>
+                            <h4 class="font-black text-slate-800 text-[14px] uppercase leading-tight flex-1">Đồng Bào Vùng Cao</h4>
+                        </div>
+                        <img src="assets/img/icons/cd3-lesson2.png" class="lesson-icon" onerror="this.src='https://placehold.co/100/eff6ff/3b82f6?text=⛰️'"/>
+                    </div>
+                    <div class="space-y-2 mb-3">
+                        <div class="bg-blue-50 rounded-lg p-2 border border-blue-100">
+                            <p class="text-[10px] text-blue-600 uppercase font-black mb-1">🤖 Sunbot</p>
+                            <p class="text-[12px] text-slate-800 font-bold m-0">Các Dân Tộc VN</p>
+                        </div>
+                        <div class="bg-orange-50 rounded-lg p-2 border border-orange-100">
+                            <p class="text-[10px] text-orange-600 uppercase font-black mb-1">⚙️ STEAM</p>
+                            <p class="text-[12px] text-slate-800 font-bold m-0">Guồng Quay Nước</p>
+                        </div>
+                    </div>
+                    <p class="text-[11px] text-slate-500 mt-auto border-t border-slate-100 pt-3 italic">Nhận biết nét đẹp các dân tộc. Chế tạo guồng nước phát điện mô phỏng.</p>
+                </div>
+
+                <div class="card-3d !p-4 flex flex-col h-full hover:border-orange-300">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-orange-600 text-white flex items-center justify-center font-black text-[12px]">16</div>
+                            <h4 class="font-black text-slate-800 text-[14px] uppercase leading-tight flex-1">Âm Nhạc Dân Tộc</h4>
+                        </div>
+                        <img src="assets/img/icons/cd3-lesson3.png" class="lesson-icon" onerror="this.src='https://placehold.co/100/ecfdf5/10b981?text=🎶'"/>
+                    </div>
+                    <div class="space-y-2 mb-3">
+                        <div class="bg-blue-50 rounded-lg p-2 border border-blue-100">
+                            <p class="text-[10px] text-blue-600 uppercase font-black mb-1">🤖 Sunbot</p>
+                            <p class="text-[12px] text-slate-800 font-bold m-0">Khám Phá Nhạc Cụ</p>
+                        </div>
+                        <div class="bg-orange-50 rounded-lg p-2 border border-orange-100">
+                            <p class="text-[10px] text-orange-600 uppercase font-black mb-1">⚙️ STEAM</p>
+                            <p class="text-[12px] text-slate-800 font-bold m-0">Mô Hình Đàn Tranh</p>
+                        </div>
+                    </div>
+                    <p class="text-[11px] text-slate-500 mt-auto border-t border-slate-100 pt-3 italic">Lắng nghe âm thanh cổ truyền. Chế tạo Đàn Tranh STEAM từ vật liệu tái chế.</p>
+                </div>
+
+                <div class="card-3d !p-4 flex flex-col h-full hover:border-orange-300">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-orange-600 text-white flex items-center justify-center font-black text-[12px]">17</div>
+                            <h4 class="font-black text-slate-800 text-[14px] uppercase leading-tight flex-1">Nghệ Thuật Múa Rối</h4>
+                        </div>
+                        <img src="assets/img/icons/cd3-lesson4.png" class="lesson-icon" onerror="this.src='https://placehold.co/100/fef2f2/dc2626?text=🎭'"/>
+                    </div>
+                    <div class="space-y-2 mb-3">
+                        <div class="bg-blue-50 rounded-lg p-2 border border-blue-100">
+                            <p class="text-[10px] text-blue-600 uppercase font-black mb-1">🤖 Sunbot</p>
+                            <p class="text-[12px] text-slate-800 font-bold m-0">Múa Rối Dân Gian</p>
+                        </div>
+                        <div class="bg-orange-50 rounded-lg p-2 border border-orange-100">
+                            <p class="text-[10px] text-orange-600 uppercase font-black mb-1">⚙️ STEAM</p>
+                            <p class="text-[12px] text-slate-800 font-bold m-0">Làm Con Rối</p>
+                        </div>
+                    </div>
+                    <p class="text-[11px] text-slate-500 mt-auto border-t border-slate-100 pt-3 italic">Tìm hiểu nghệ thuật rối nước đặc trưng. Thực hành làm và điều khiển rối.</p>
+                </div>
+
+                <div class="card-3d !p-4 flex flex-col h-full hover:border-orange-300">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-orange-600 text-white flex items-center justify-center font-black text-[12px]">18</div>
+                            <h4 class="font-black text-slate-800 text-[14px] uppercase leading-tight flex-1">Lễ Hội Múa Rồng</h4>
+                        </div>
+                        <img src="assets/img/icons/cd3-lesson5.png" class="lesson-icon" onerror="this.src='https://placehold.co/100/fffbeb/d97706?text=🐉'"/>
+                    </div>
+                    <div class="space-y-2 mb-3">
+                        <div class="bg-blue-50 rounded-lg p-2 border border-blue-100">
+                            <p class="text-[10px] text-blue-600 uppercase font-black mb-1">🤖 Sunbot</p>
+                            <p class="text-[12px] text-slate-800 font-bold m-0">Lễ Hội Múa Rồng</p>
+                        </div>
+                        <div class="bg-orange-50 rounded-lg p-2 border border-orange-100">
+                            <p class="text-[10px] text-orange-600 uppercase font-black mb-1">⚙️ STEAM</p>
+                            <p class="text-[12px] text-slate-800 font-bold m-0">Mô Hình Rồng</p>
+                        </div>
+                    </div>
+                    <p class="text-[11px] text-slate-500 mt-auto border-t border-slate-100 pt-3 italic">Khám phá ý nghĩa múa rồng ngày lễ. Làm rồng giấy và diễn hành nhóm.</p>
+                </div>
+
+                <div class="card-3d !p-4 flex flex-col h-full hover:border-orange-300">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-orange-600 text-white flex items-center justify-center font-black text-[12px]">19</div>
+                            <h4 class="font-black text-slate-800 text-[14px] uppercase leading-tight flex-1">Báo Hiếu Vu Lan</h4>
+                        </div>
+                        <img src="assets/img/icons/cd3-lesson6.png" class="lesson-icon" onerror="this.src='https://placehold.co/100/f5f3ff/7c3aed?text=🪷'"/>
+                    </div>
+                    <div class="space-y-2 mb-3">
+                        <div class="bg-blue-50 rounded-lg p-2 border border-blue-100">
+                            <p class="text-[10px] text-blue-600 uppercase font-black mb-1">🤖 Sunbot</p>
+                            <p class="text-[12px] text-slate-800 font-bold m-0">Báo Hiếu Vu Lan</p>
+                        </div>
+                        <div class="bg-orange-50 rounded-lg p-2 border border-orange-100">
+                            <p class="text-[10px] text-orange-600 uppercase font-black mb-1">⚙️ STEAM</p>
+                            <p class="text-[12px] text-slate-800 font-bold m-0">Đèn Hoa Đăng</p>
+                        </div>
+                    </div>
+                    <p class="text-[11px] text-slate-500 mt-auto border-t border-slate-100 pt-3 italic">Thấu hiểu ý nghĩa lòng hiếu thảo. Chế tạo đèn hoa đăng xoay tròn tri ân.</p>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <img src="assets/img/logo-sunbot.png" class="h-4 grayscale opacity-40" onerror="this.style.display='none'"/>
+                <span class="text-slate-400 font-bold uppercase tracking-widest text-[10px]">Trang 05 / 08</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: MA TRẬN MIX & MATCH (11 LỰA CHỌN) -->
+        <div class="slide-page">
+            <div class="glow-blue w-[400px] h-[400px] top-0 left-1/4"></div>
+            <div class="slide-header border-none mb-2">
+                <div>
+                    <div class="slide-header-title">MA TRẬN LẮP GHÉP - SUNBOT MIX & MATCH</div>
+                    <p class="text-[13px] text-slate-500 mt-1 font-medium max-w-2xl">Hệ thống cho phép Trung tâm/Cơ sở giáo dục tuỳ biến linh hoạt tổ hợp bài học dựa theo Mục tiêu giáo dục, Khung thời gian và Ngân sách thực tế.</p>
+                </div>
+                <img src="assets/img/logo-sunbot.png" class="h-6 grayscale opacity-30" onerror="this.style.display='none'"/>
+            </div>
+            
+            <!-- Filter Controls (11 Options) -->
+            <div class="flex flex-wrap justify-center gap-2 mb-4 no-print relative z-10" id="filter-controls">
+                <button class="mix-btn active px-3 py-1.5 rounded-full border border-slate-200 text-slate-600 text-[11px] font-bold uppercase" data-filter="kp-dat-viet">Khám phá đất Việt</button>
+                <button class="mix-btn px-3 py-1.5 rounded-full border border-slate-200 text-slate-600 text-[11px] font-bold uppercase" data-filter="lang-nghe">Làng nghề tuổi thơ</button>
+                <button class="mix-btn px-3 py-1.5 rounded-full border border-slate-200 text-slate-600 text-[11px] font-bold uppercase" data-filter="hanh-trinh-vh">Hành trình văn hoá</button>
+                <button class="mix-btn px-3 py-1.5 rounded-full border border-slate-200 text-slate-600 text-[11px] font-bold uppercase" data-filter="chuyen-tau">Chuyến tàu tuổi thơ</button>
+                <button class="mix-btn px-3 py-1.5 rounded-full border border-slate-200 text-slate-600 text-[11px] font-bold uppercase" data-filter="le-hoi">Lễ hội bốn phương</button>
+                <button class="mix-btn px-3 py-1.5 rounded-full border border-slate-200 text-slate-600 text-[11px] font-bold uppercase" data-filter="xuyen-viet">Sunbot xuyên Việt</button>
+                <button class="mix-btn px-3 py-1.5 rounded-full border border-slate-200 text-slate-600 text-[11px] font-bold uppercase" data-filter="mn-yeu-nuoc">Mầm non yêu nước</button>
+                <button class="mix-btn px-3 py-1.5 rounded-full border border-slate-200 text-slate-600 text-[11px] font-bold uppercase" data-filter="trai-he-dg">Trại hè dân gian</button>
+                <button class="mix-btn px-3 py-1.5 rounded-full border border-slate-200 text-slate-600 text-[11px] font-bold uppercase" data-filter="bien-dao">Sunbot & Biển đảo</button>
+                <button class="mix-btn px-3 py-1.5 rounded-full border border-slate-200 text-slate-600 text-[11px] font-bold uppercase" data-filter="nghe-nhan">Gặp gỡ nghệ nhân</button>
+                <button class="mix-btn px-3 py-1.5 rounded-full border border-slate-200 text-slate-600 text-[11px] font-bold uppercase" data-filter="sac-mau-vh">Sắc màu văn hoá</button>
+            </div>
+
+            <!-- Dynamic Info Panel -->
+            <div id="package-info-container" class="info-panel show justify-between items-center bg-orange-50 border border-orange-100 rounded-xl p-3 mb-4 relative z-10">
+                <div class="flex-1 pr-4">
+                    <h5 id="pkg-title" class="font-black text-orange-700 text-sm uppercase mb-1">Khám phá đất Việt</h5>
+                    <p id="pkg-desc" class="text-[11px] text-slate-600 leading-relaxed">Giáo dục toàn diện về lịch sử và địa lý trải dài khắp đất nước. Mang tính giáo dục nền tảng cao, dễ dàng nhận được sự đồng thuận từ Phụ huynh và phù hợp để cơ sở xin tài trợ tổ chức quy mô lớn.</p>
+                </div>
+                <div class="text-right border-l border-orange-200 pl-4 min-w-[140px]">
+                    <div class="text-[9px] text-orange-500 font-bold uppercase mb-1">Thời lượng & Đối tượng</div>
+                    <div id="pkg-time" class="font-black text-slate-800 text-xs mb-1">2 Tuần (Linh hoạt)</div>
+                    <div id="pkg-target" class="text-[10px] text-slate-600 font-medium">Cơ sở giáo dục & Trung tâm</div>
+                </div>
+            </div>
+
+            <!-- 18 Modules Grid (Bigger Icons) -->
+            <div class="flex-grow grid grid-cols-6 gap-3 relative z-10" id="module-grid">
+                <!-- Data tags: filter classes mapped logically based on prompt -->
+                <div class="matrix-card card-3d !p-2 flex flex-col justify-center items-center text-center cursor-default" data-category="kp-dat-viet xuyen-viet">
+                    <div class="absolute top-1 left-2 text-slate-400 font-black text-[10px]">01</div>
+                    <img src="assets/img/icons/cd1-lesson1.png" class="w-14 h-14 rounded-xl object-cover mb-1 border border-slate-100 shadow-sm" onerror="this.src='https://placehold.co/150/f8fafc/94a3b8?text=🗺️'"/>
+                    <p class="text-[10px] font-bold text-slate-700 leading-tight">Khám Phá<br>Đất Nước</p>
+                </div>
+                <div class="matrix-card card-3d !p-2 flex flex-col justify-center items-center text-center cursor-default" data-category="kp-dat-viet chuyen-tau xuyen-viet mn-yeu-nuoc">
+                    <div class="absolute top-1 left-2 text-slate-400 font-black text-[10px]">02</div>
+                    <img src="assets/img/icons/cd1-lesson3.png" class="w-14 h-14 rounded-xl object-cover mb-1 border border-slate-100 shadow-sm" onerror="this.src='https://placehold.co/150/f8fafc/94a3b8?text=🚩'"/>
+                    <p class="text-[10px] font-bold text-slate-700 leading-tight">Hà Giang<br>Cột Cờ</p>
+                </div>
+                <div class="matrix-card card-3d !p-2 flex flex-col justify-center items-center text-center cursor-default" data-category="kp-dat-viet xuyen-viet bien-dao">
+                    <div class="absolute top-1 left-2 text-slate-400 font-black text-[10px]">03</div>
+                    <img src="assets/img/icons/cd1-lesson4.png" class="w-14 h-14 rounded-xl object-cover mb-1 border border-slate-100 shadow-sm" onerror="this.src='https://placehold.co/150/f8fafc/94a3b8?text=⛵'"/>
+                    <p class="text-[10px] font-bold text-slate-700 leading-tight">Vịnh<br>Hạ Long</p>
+                </div>
+                <div class="matrix-card card-3d !p-2 flex flex-col justify-center items-center text-center cursor-default" data-category="kp-dat-viet chuyen-tau xuyen-viet">
+                    <div class="absolute top-1 left-2 text-slate-400 font-black text-[10px]">04</div>
+                    <img src="assets/img/icons/cd1-lesson5.png" class="w-14 h-14 rounded-xl object-cover mb-1 border border-slate-100 shadow-sm" onerror="this.src='https://placehold.co/150/f8fafc/94a3b8?text=🐉'"/>
+                    <p class="text-[10px] font-bold text-slate-700 leading-tight">Đà Nẵng<br>Cầu Rồng</p>
+                </div>
+                <div class="matrix-card card-3d !p-2 flex flex-col justify-center items-center text-center cursor-default" data-category="kp-dat-viet chuyen-tau xuyen-viet mn-yeu-nuoc">
+                    <div class="absolute top-1 left-2 text-slate-400 font-black text-[10px]">05</div>
+                    <img src="assets/img/icons/cd1-lesson6.png" class="w-14 h-14 rounded-xl object-cover mb-1 border border-slate-100 shadow-sm" onerror="this.src='https://placehold.co/150/f8fafc/94a3b8?text=🚜'"/>
+                    <p class="text-[10px] font-bold text-slate-700 leading-tight">TP Hồ<br>Chí Minh</p>
+                </div>
+                <div class="matrix-card card-3d !p-2 flex flex-col justify-center items-center text-center cursor-default" data-category="kp-dat-viet xuyen-viet mn-yeu-nuoc bien-dao">
+                    <div class="absolute top-1 left-2 text-slate-400 font-black text-[10px]">06</div>
+                    <img src="assets/img/icons/cd1-lesson7.png" class="w-14 h-14 rounded-xl object-cover mb-1 border border-slate-100 shadow-sm" onerror="this.src='https://placehold.co/150/f8fafc/94a3b8?text=⚓'"/>
+                    <p class="text-[10px] font-bold text-slate-700 leading-tight">Trường Sa<br>Hoàng Sa</p>
+                </div>
+                
+                <div class="matrix-card card-3d !p-2 flex flex-col justify-center items-center text-center cursor-default" data-category="lang-nghe">
+                    <div class="absolute top-1 left-2 text-slate-400 font-black text-[10px]">07</div>
+                    <img src="assets/img/icons/cd2-lesson1.png" class="w-14 h-14 rounded-xl object-cover mb-1 border border-slate-100 shadow-sm" onerror="this.src='https://placehold.co/150/f8fafc/94a3b8?text=🧶'"/>
+                    <p class="text-[10px] font-bold text-slate-700 leading-tight">Nghề<br>Thêu Dệt</p>
+                </div>
+                <div class="matrix-card card-3d !p-2 flex flex-col justify-center items-center text-center cursor-default" data-category="lang-nghe nghe-nhan">
+                    <div class="absolute top-1 left-2 text-slate-400 font-black text-[10px]">08</div>
+                    <img src="assets/img/icons/cd2-lesson2.png" class="w-14 h-14 rounded-xl object-cover mb-1 border border-slate-100 shadow-sm" onerror="this.src='https://placehold.co/150/f8fafc/94a3b8?text=🏺'"/>
+                    <p class="text-[10px] font-bold text-slate-700 leading-tight">Gốm<br>Bát Tràng</p>
+                </div>
+                <div class="matrix-card card-3d !p-2 flex flex-col justify-center items-center text-center cursor-default" data-category="lang-nghe nghe-nhan">
+                    <div class="absolute top-1 left-2 text-slate-400 font-black text-[10px]">09</div>
+                    <img src="assets/img/icons/cd2-lesson3.png" class="w-14 h-14 rounded-xl object-cover mb-1 border border-slate-100 shadow-sm" onerror="this.src='https://placehold.co/150/f8fafc/94a3b8?text=👗'"/>
+                    <p class="text-[10px] font-bold text-slate-700 leading-tight">Lụa<br>Vạn Phúc</p>
+                </div>
+                <div class="matrix-card card-3d !p-2 flex flex-col justify-center items-center text-center cursor-default" data-category="lang-nghe">
+                    <div class="absolute top-1 left-2 text-slate-400 font-black text-[10px]">10</div>
+                    <img src="assets/img/icons/cd2-lesson4.png" class="w-14 h-14 rounded-xl object-cover mb-1 border border-slate-100 shadow-sm" onerror="this.src='https://placehold.co/150/f8fafc/94a3b8?text=🧺'"/>
+                    <p class="text-[10px] font-bold text-slate-700 leading-tight">Mây Tre<br>Đan</p>
+                </div>
+                <div class="matrix-card card-3d !p-2 flex flex-col justify-center items-center text-center cursor-default" data-category="lang-nghe">
+                    <div class="absolute top-1 left-2 text-slate-400 font-black text-[10px]">11</div>
+                    <img src="assets/img/icons/cd2-lesson5.png" class="w-14 h-14 rounded-xl object-cover mb-1 border border-slate-100 shadow-sm" onerror="this.src='https://placehold.co/150/f8fafc/94a3b8?text=🎋'"/>
+                    <p class="text-[10px] font-bold text-slate-700 leading-tight">Quạt<br>Chàng Sơn</p>
+                </div>
+                <div class="matrix-card card-3d !p-2 flex flex-col justify-center items-center text-center cursor-default" data-category="lang-nghe nghe-nhan">
+                    <div class="absolute top-1 left-2 text-slate-400 font-black text-[10px]">12</div>
+                    <img src="assets/img/icons/cd2-lesson6.png" class="w-14 h-14 rounded-xl object-cover mb-1 border border-slate-100 shadow-sm" onerror="this.src='https://placehold.co/150/f8fafc/94a3b8?text=👺'"/>
+                    <p class="text-[10px] font-bold text-slate-700 leading-tight">Mặt Nạ<br>Giấy Bồi</p>
+                </div>
+                
+                <div class="matrix-card card-3d !p-2 flex flex-col justify-center items-center text-center cursor-default" data-category="hanh-trinh-vh trai-he-dg sac-mau-vh">
+                    <div class="absolute top-1 left-2 text-slate-400 font-black text-[10px]">13</div>
+                    <img src="assets/img/icons/cd3-lesson1.png" class="w-14 h-14 rounded-xl object-cover mb-1 border border-slate-100 shadow-sm" onerror="this.src='https://placehold.co/150/f8fafc/94a3b8?text=👚'"/>
+                    <p class="text-[10px] font-bold text-slate-700 leading-tight">Trang Phục<br>Dân Tộc</p>
+                </div>
+                <div class="matrix-card card-3d !p-2 flex flex-col justify-center items-center text-center cursor-default" data-category="hanh-trinh-vh">
+                    <div class="absolute top-1 left-2 text-slate-400 font-black text-[10px]">14</div>
+                    <img src="assets/img/icons/cd3-lesson2.png" class="w-14 h-14 rounded-xl object-cover mb-1 border border-slate-100 shadow-sm" onerror="this.src='https://placehold.co/150/f8fafc/94a3b8?text=⛰️'"/>
+                    <p class="text-[10px] font-bold text-slate-700 leading-tight">Đồng Bào<br>Vùng Cao</p>
+                </div>
+                <div class="matrix-card card-3d !p-2 flex flex-col justify-center items-center text-center cursor-default" data-category="hanh-trinh-vh le-hoi trai-he-dg">
+                    <div class="absolute top-1 left-2 text-slate-400 font-black text-[10px]">15</div>
+                    <img src="assets/img/icons/cd3-lesson3.png" class="w-14 h-14 rounded-xl object-cover mb-1 border border-slate-100 shadow-sm" onerror="this.src='https://placehold.co/150/f8fafc/94a3b8?text=🎶'"/>
+                    <p class="text-[10px] font-bold text-slate-700 leading-tight">Nhạc Cụ<br>Dân Tộc</p>
+                </div>
+                <div class="matrix-card card-3d !p-2 flex flex-col justify-center items-center text-center cursor-default" data-category="hanh-trinh-vh le-hoi sac-mau-vh">
+                    <div class="absolute top-1 left-2 text-slate-400 font-black text-[10px]">16</div>
+                    <img src="assets/img/icons/cd3-lesson4.png" class="w-14 h-14 rounded-xl object-cover mb-1 border border-slate-100 shadow-sm" onerror="this.src='https://placehold.co/150/f8fafc/94a3b8?text=🎭'"/>
+                    <p class="text-[10px] font-bold text-slate-700 leading-tight">Nghệ Thuật<br>Dân Gian</p>
+                </div>
+                <div class="matrix-card card-3d !p-2 flex flex-col justify-center items-center text-center cursor-default" data-category="hanh-trinh-vh le-hoi trai-he-dg sac-mau-vh">
+                    <div class="absolute top-1 left-2 text-slate-400 font-black text-[10px]">17</div>
+                    <img src="assets/img/icons/cd3-lesson5.png" class="w-14 h-14 rounded-xl object-cover mb-1 border border-slate-100 shadow-sm" onerror="this.src='https://placehold.co/150/f8fafc/94a3b8?text=🐉'"/>
+                    <p class="text-[10px] font-bold text-slate-700 leading-tight">Lễ Hội<br>Múa Rồng</p>
+                </div>
+                <div class="matrix-card card-3d !p-2 flex flex-col justify-center items-center text-center cursor-default" data-category="hanh-trinh-vh">
+                    <div class="absolute top-1 left-2 text-slate-400 font-black text-[10px]">18</div>
+                    <img src="assets/img/icons/cd3-lesson6.png" class="w-14 h-14 rounded-xl object-cover mb-1 border border-slate-100 shadow-sm" onerror="this.src='https://placehold.co/150/f8fafc/94a3b8?text=🪷'"/>
+                    <p class="text-[10px] font-bold text-slate-700 leading-tight">Lễ Báo<br>Hiếu</p>
+                </div>
+            </div>
+
+            <div class="slide-footer">
+                <img src="assets/img/logo-sunbot.png" class="h-4 grayscale opacity-40" onerror="this.style.display='none'"/>
+                <span class="text-slate-400 font-bold uppercase tracking-widest text-[10px]">Trang 06 / 08</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: LỘ TRÌNH & THỜI GIAN -->
+        <div class="slide-page">
+            <div class="slide-header">
+                <div class="slide-header-title">PHÂN BỔ THỜI LƯỢNG LINH HOẠT</div>
+                <div class="flex items-center gap-2">
+                    <span class="bg-slate-100 text-slate-700 px-3 py-1 rounded-full text-[10px] font-bold">MẦM NON</span>
+                    <span class="bg-slate-100 text-slate-700 px-3 py-1 rounded-full text-[10px] font-bold">TIỂU HỌC</span>
+                </div>
+            </div>
+            
+            <div class="flex-grow flex flex-col gap-6 mt-4">
+                <p class="text-center text-[14px] text-slate-600 mb-2 font-medium">Hệ thống giáo án được thiết kế dưới 2 định dạng, tương thích hoàn toàn với khung thời khóa biểu của cơ sở giáo dục mầm non, trường học và các trung tâm ngoại khóa.</p>
+
+                <!-- Format 1: 30-35 mins -->
+                <div class="card-3d !p-6 border-l-8 border-blue-500 relative">
+                    <div class="absolute top-4 right-4 bg-blue-100 text-blue-700 px-3 py-1 rounded-lg text-[10px] font-black uppercase">Đại Trà / Khung chú ý ngắn</div>
+                    <h3 class="font-black text-slate-800 text-[18px] uppercase mb-2 flex items-center gap-2">⏱️ Format Tách Chiết (30 - 35 Phút)</h3>
+                    <p class="text-[12px] text-slate-500 mb-4">Tách biệt bài học thành 2 buổi riêng: 1 buổi Lập trình Sunbot & 1 buổi Chế tạo STEAM. Giúp trẻ mầm non không bị quá tải thông tin, giáo viên dễ quản lý lớp đông.</p>
+                    
+                    <!-- Progress Bar Visualization -->
+                    <div class="time-bar-wrapper mb-2">
+                        <div class="tb-segment bg-slate-400" style="width: 15%;">5p Khởi động</div>
+                        <div class="tb-segment bg-blue-500" style="width: 60%;">20p Hoạt động cốt lõi (Sunbot HOẶC Steam)</div>
+                        <div class="tb-segment bg-slate-300 text-slate-700" style="width: 25%;">10p Củng cố</div>
+                    </div>
+                </div>
+
+                <!-- Format 2: 60-65 mins -->
+                <div class="card-3d !p-6 border-l-8 border-orange-500 relative">
+                    <div class="absolute top-4 right-4 bg-orange-100 text-orange-700 px-3 py-1 rounded-lg text-[10px] font-black uppercase">Trại Hè / Trung Tâm / Lớp Kỹ Năng</div>
+                    <h3 class="font-black text-slate-800 text-[18px] uppercase mb-2 flex items-center gap-2">⏳ Format Chuyên Sâu (60 - 65 Phút)</h3>
+                    <p class="text-[12px] text-slate-500 mb-4">Gộp Lập trình Sunbot & Chế tạo STEAM vào cùng một buổi học liên tục. Tạo chuỗi trải nghiệm liền mạch: Từ việc tiếp nhận câu chuyện lịch sử, lập trình giải quyết vấn đề đến chế tác sản phẩm mang về.</p>
+                    
+                    <!-- Progress Bar Visualization -->
+                    <div class="time-bar-wrapper mb-2">
+                        <div class="tb-segment bg-slate-400" style="width: 15%;">10p Storytelling</div>
+                        <div class="tb-segment bg-blue-500" style="width: 35%;">25p Lập trình Sunbot</div>
+                        <div class="tb-segment bg-orange-500" style="width: 35%;">20p Chế tạo STEAM</div>
+                        <div class="tb-segment bg-slate-300 text-slate-700" style="width: 15%;">10p Thuyết trình</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="slide-footer">
+                <img src="assets/img/logo-sunbot.png" class="h-4 grayscale opacity-40" onerror="this.style.display='none'"/>
+                <span class="text-slate-400 font-bold uppercase tracking-widest text-[10px]">Trang 07 / 08</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 8: KẾT LUẬN -->
+        <div class="slide-page cover-page">
+            <div class="glow-orange w-[800px] h-[800px] -top-1/4 -right-1/4"></div>
+            <div class="flex-grow flex flex-col justify-center items-center text-center relative z-10 w-full h-full">
+                <img src="assets/img/logo-sunbot.png" alt="Sunbot Logo" class="h-24 mb-8 drop-shadow-sm" onerror="this.src='https://placehold.co/200x60/transparent/ea580c?text=SUNBOT'"/>
+                <h2 class="text-5xl font-black text-slate-900 uppercase tracking-tight mb-6">
+                    MỘT HÀNH TRÌNH<br>
+                    <span class="text-gradient-orange">ƯƠM MẦM TRÍ TUỆ VIỆT</span>
+                </h2>
+                <p class="text-[16px] text-slate-500 max-w-2xl font-medium leading-relaxed mb-10">
+                    Sunbot Camp mang sứ mệnh mượn công nghệ để truyền cảm hứng về lòng tự hào dân tộc. Chúng tôi tin rằng những đứa trẻ hiểu về gốc rễ sẽ là những đứa trẻ vươn xa nhất trong tương lai.
+                </p>
+                <div class="flex gap-4 justify-center">
+                    <span class="bg-white border border-slate-200 text-slate-600 px-8 py-3 rounded-2xl font-black text-xs uppercase tracking-widest shadow-sm">Bản Sắc</span>
+                    <span class="bg-orange-600 text-white px-8 py-3 rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-orange-200">Sáng Tạo</span>
+                    <span class="bg-white border border-slate-200 text-slate-600 px-8 py-3 rounded-2xl font-black text-xs uppercase tracking-widest shadow-sm">Công Nghệ</span>
+                </div>
+            </div>
+            <div class="slide-footer flex justify-center items-center w-full border-t border-slate-100 pt-4">
+                <span class="text-slate-400 font-bold uppercase tracking-widest text-[11px]">CÔNG TY CỔ PHẦN CÔNG NGHỆ GIÁO DỤC KIRO VIỆT NAM</span>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- JS CHO MA TRẬN LẮP GHÉP -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const buttons = document.querySelectorAll('.mix-btn');
+            const cards = document.querySelectorAll('.matrix-card');
+            const infoPanel = document.getElementById('package-info-container');
+            const titleEl = document.getElementById('pkg-title');
+            const descEl = document.getElementById('pkg-desc');
+            const timeEl = document.getElementById('pkg-time');
+            const targetEl = document.getElementById('pkg-target');
+
+            const packageData = {
+                'kp-dat-viet': {
+                    title: 'Khám Phá Đất Việt',
+                    desc: 'Giáo dục toàn diện về lịch sử và địa lý trải dài khắp đất nước. Mang tính giáo dục nền tảng cao, dễ dàng nhận được sự đồng thuận từ Phụ huynh và phù hợp để cơ sở xin tài trợ tổ chức quy mô lớn.',
+                    time: '2 Tuần (Linh hoạt)',
+                    target: 'Cơ sở giáo dục & Trung tâm'
+                },
+                'lang-nghe': {
+                    title: 'Làng Nghề Tuổi Thơ',
+                    desc: 'Trọng tâm vào hoạt động thủ công (Fine Motor Skills). Mang lại hình ảnh truyền thông cực tốt nhờ các sản phẩm mang về đẹp mắt, đậm chất văn hóa dân gian.',
+                    time: '1 - 2 Tuần',
+                    target: 'Trung tâm Trải nghiệm, Không gian chế tạo'
+                },
+                'hanh-trinh-vh': {
+                    title: 'Hành Trình Văn Hoá Việt',
+                    desc: 'Đào sâu vào nghệ thuật và bản sắc dân tộc. Giúp trẻ hòa nhập văn hóa, rất phù hợp với định hướng giáo dục bản sắc của các hệ thống giáo dục quốc tế hoặc song ngữ.',
+                    time: '1 - 2 Tuần',
+                    target: 'Cơ sở Quốc tế, Tổ chức Văn hóa'
+                },
+                'chuyen-tau': {
+                    title: 'Chuyến Tàu Tuổi Thơ',
+                    desc: 'Được thiết kế rút gọn nhưng vẫn trải dài ba miền Bắc - Trung - Nam. Giải pháp cứu cánh cho các cơ sở thiếu nhân sự dài hạn nhưng cần một chương trình hè triển khai nhanh gọn.',
+                    time: '1 Tuần (3 Buổi)',
+                    target: 'Học kỳ hè ngắn hạn, Lớp kỹ năng'
+                },
+                'le-hoi': {
+                    title: 'Lễ Hội Bốn Phương',
+                    desc: 'Tập hợp các bài học sôi động nhất về âm nhạc và múa rồng. Phù hợp tung ra vào các dịp cao điểm lễ hội (Trung Thu, Lễ Tết) để đẩy mạnh truyền thông tuyển sinh.',
+                    time: '1 Tuần (3 Buổi)',
+                    target: 'Cơ sở tổ chức sự kiện dịp Lễ/Hội'
+                },
+                'xuyen-viet': {
+                    title: 'Sunbot Xuyên Việt (Premium)',
+                    desc: 'Gói trải nghiệm cao cấp nhất, dẫn dắt trẻ đi dọc bản đồ chữ S để hoàn thành nhiệm vụ chung. Phù hợp cho khách hàng đầu tư lớn, muốn PR mạnh mẽ và kết nối phụ huynh qua buổi báo cáo hoành tráng.',
+                    time: 'Thời lượng chuyên sâu',
+                    target: 'Chương trình VIP, Trại hè Premium'
+                },
+                'mn-yeu-nuoc': {
+                    title: 'Mầm Non Yêu Nước',
+                    desc: 'Gieo hạt giống tự hào dân tộc qua những điểm chạm cốt lõi nhất (Cột cờ, Lịch sử, Biển đảo). Ngân sách tối ưu, lý tưởng cho các dự án cộng đồng (CSR) hoặc các cơ sở ở vùng khó.',
+                    time: 'Gọn nhẹ (3 Buổi)',
+                    target: 'Dự án CSR, Ngân sách thấp'
+                },
+                'trai-he-dg': {
+                    title: 'Trại Hè Dân Gian (Mini Camp)',
+                    desc: 'Đánh mạnh vào cảm xúc và nghệ thuật qua trang phục, âm nhạc, múa rồng. Rất phù hợp cho các lớp học kỹ năng mềm hoặc trung tâm nghệ thuật muốn đa dạng hóa trải nghiệm dịp hè.',
+                    time: '1 Tuần (3 Buổi)',
+                    target: 'TT Giáo dục Nghệ thuật, Lớp kỹ năng'
+                },
+                'bien-dao': {
+                    title: 'Sunbot & Biển Đảo Việt Nam',
+                    desc: 'Gắn liền với tính thời sự, giáo dục sớm cho trẻ về tình yêu biển đảo quê hương. Rất dễ tích hợp vào các chuyên đề giáo dục tại các cơ sở trong dịp hè.',
+                    time: 'Chuyên đề ngắn',
+                    target: 'Cơ sở giáo dục, Hoạt động ngoại khóa'
+                },
+                'nghe-nhan': {
+                    title: 'Sunbot Gặp Gỡ Nghệ Nhân',
+                    desc: 'Tái hiện lại không gian lao động của các làng nghề cổ truyền. Trẻ được đóng vai nghệ nhân thực thụ. Dễ dàng tạo ra các video, sản phẩm media lan tỏa ấn tượng mạnh trên mạng xã hội.',
+                    time: 'Sự kiện chuyên đề',
+                    target: 'Trung tâm trải nghiệm, Khóa học cuối tuần'
+                },
+                'sac-mau-vh': {
+                    title: 'Trại Hè Sắc Màu Văn Hoá',
+                    desc: 'Kết hợp vận động thể chất và nghệ thuật. Trẻ không ngồi một chỗ mà liên tục tương tác qua các trò chơi dân gian, múa lân. Đem lại sự khác biệt hoàn toàn so với các trại hè học thuật.',
+                    time: 'Hoạt động linh hoạt',
+                    target: 'Trung tâm kỹ năng, Nhóm cộng đồng'
+                }
+            };
+
+            buttons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    // Reset buttons
+                    buttons.forEach(b => {
+                        b.classList.remove('active');
+                    });
+                    
+                    // Activate clicked button
+                    btn.classList.add('active');
+
+                    const filter = btn.getAttribute('data-filter');
+
+                    // Filter Cards
+                    cards.forEach(card => {
+                        const categories = card.getAttribute('data-category');
+                        if (categories.includes(filter)) {
+                            card.classList.remove('inactive');
+                            card.classList.add('active-highlight');
+                        } else {
+                            card.classList.remove('active-highlight');
+                            card.classList.add('inactive');
+                        }
+                    });
+
+                    // Update Info Panel
+                    infoPanel.classList.remove('show');
+                    setTimeout(() => {
+                        const data = packageData[filter];
+                        titleEl.innerText = data.title;
+                        descEl.innerText = data.desc;
+                        timeEl.innerText = data.time;
+                        targetEl.innerText = data.target;
+                        infoPanel.classList.add('show');
+                    }, 200);
+                });
+            });
+            
+            // Trigger the first one to show by default
+            buttons[0].click();
+        });
+    </script>
+</body>
+</html>
