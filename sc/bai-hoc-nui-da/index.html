@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Sunbot Interactive Lesson - Màu của Nước Biển</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
@@ -13,6 +13,7 @@
             background-color: #fff7ed;
             overflow: hidden; 
             user-select: none; 
+            touch-action: manipulation; /* Chống phóng to/thu nhỏ ngoài ý muốn trên mobile */
         }
 
         .hotspot-ping { animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite; }
@@ -26,7 +27,7 @@
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
         }
 
-        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #fdba74; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #f97316; }
@@ -55,11 +56,14 @@
         .memory-card { perspective: 1000px; cursor: pointer; }
         .memory-card-inner { position: relative; width: 100%; height: 100%; text-align: center; transition: transform 0.6s; transform-style: preserve-3d; }
         .memory-card.flipped .memory-card-inner { transform: rotateY(180deg); }
-        .memory-card-front, .memory-card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; align-items: center; justify-content: center; border-radius: 1rem; font-size: 4rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .memory-card-front { background-color: #fff; transform: rotateY(180deg); }
-        .memory-card-back { background: linear-gradient(135deg, #f97316, #fcd34d); color: white; font-size: 3rem; font-weight: black; }
+        .memory-card-front, .memory-card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; align-items: center; justify-content: center; border-radius: 0.75rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        @media (min-width: 1024px) { .memory-card-front, .memory-card-back { border-radius: 1rem; } }
+        .memory-card-front { background-color: #fff; transform: rotateY(180deg); font-size: 3rem; }
+        @media (min-width: 1024px) { .memory-card-front { font-size: 4rem; } }
+        .memory-card-back { background: linear-gradient(135deg, #f97316, #fcd34d); color: white; font-size: 2rem; font-weight: 900; }
+        @media (min-width: 1024px) { .memory-card-back { font-size: 3rem; } }
 
-        /* Chùm sáng đèn pin cho phần thực hành */
+        /* Chùm sáng đèn pin */
         .light-beam {
             clip-path: polygon(48% 0, 52% 0, 100% 100%, 0% 100%);
             background: linear-gradient(to bottom, rgba(253, 224, 71, 0.85) 0%, rgba(253, 224, 71, 0.1) 100%);
@@ -68,17 +72,20 @@
         }
         @keyframes pulse-light { 0% { opacity: 0.7; } 100% { opacity: 1; } }
 
-        /* Cốc Thủy Tinh Thực Tế & Bọt Nước */
+        /* Cốc Thủy Tinh */
         .glass-cup {
             background: linear-gradient(to right, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.6) 20%, rgba(255,255,255,0.1) 100%);
-            border: 3px solid rgba(255, 255, 255, 0.9);
+            border: 2px solid rgba(255, 255, 255, 0.9);
             border-top: none;
-            border-radius: 0 0 16px 16px;
-            box-shadow: inset 0 -5px 15px rgba(0,0,0,0.1), 0 10px 15px rgba(0,0,0,0.15);
+            border-radius: 0 0 12px 12px;
+            box-shadow: inset 0 -5px 15px rgba(0,0,0,0.1), 0 5px 10px rgba(0,0,0,0.15);
             position: relative;
             overflow: hidden;
             backdrop-filter: blur(2px);
             z-index: 20;
+        }
+        @media (min-width: 1024px) {
+            .glass-cup { border-width: 3px; border-radius: 0 0 16px 16px; box-shadow: inset 0 -5px 15px rgba(0,0,0,0.1), 0 10px 15px rgba(0,0,0,0.15); }
         }
         .water-fill {
             transition: all 1.2s ease-in-out;
@@ -100,7 +107,8 @@
         }
     </style>
 </head>
-<body class="h-screen w-screen flex flex-row relative">
+<!-- Điều chỉnh body: dọc trên mobile (flex-col), ngang trên PC (lg:flex-row) -->
+<body class="h-screen w-screen flex flex-col lg:flex-row relative">
 
     <div class="hidden grid-cols-2 grid-cols-3 grid-cols-4"></div>
 
@@ -112,59 +120,60 @@
         <source src="https://actions.google.com/sounds/v1/crowds/kids_cheering.ogg" type="audio/ogg">
     </audio>
 
-    <button id="musicToggleBtn" onclick="toggleMusic(event)" class="absolute top-4 left-4 z-40 bg-white/80 backdrop-blur rounded-full p-3 shadow-lg border-2 border-orange-200 hover:scale-110 transition flex items-center justify-center">
-        <i data-lucide="volume-x" id="musicIcon" class="w-6 h-6 text-orange-500"></i>
+    <button id="musicToggleBtn" onclick="toggleMusic(event)" class="absolute top-2 left-2 lg:top-4 lg:left-4 z-40 bg-white/80 backdrop-blur rounded-full p-2 lg:p-3 shadow-lg border-2 border-orange-200 hover:scale-110 transition flex items-center justify-center">
+        <i data-lucide="volume-x" id="musicIcon" class="w-5 h-5 lg:w-6 lg:h-6 text-orange-500"></i>
     </button>
 
-    <!-- BÊN TRÁI: KHU VỰC KHÁM PHÁ (Hình ảnh tĩnh) -->
-    <main class="w-2/3 h-full relative flex items-center justify-center p-4 bg-orange-50">
-        <div class="relative w-full h-full bg-white rounded-3xl shadow-2xl overflow-hidden border-4 border-white">
+    <!-- BÊN TRÁI / TRÊN CÙNG: KHU VỰC KHÁM PHÁ -->
+    <main class="w-full h-[45%] lg:w-2/3 lg:h-full relative flex items-center justify-center p-2 lg:p-4 bg-orange-50 z-10 shrink-0">
+        <div class="relative w-full h-full bg-white rounded-2xl lg:rounded-3xl shadow-lg lg:shadow-2xl overflow-hidden border-2 lg:border-4 border-white">
             <img src="assets/img/nui-da.png" 
                  alt="Khung cảnh núi đá" class="w-full h-full object-cover absolute inset-0 z-0" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?q=80&w=2000&auto=format&fit=crop'">
             <div class="absolute inset-0 bg-blue-900/10 z-0 pointer-events-none"></div>
 
-            <!-- 6 ĐIỂM CHẠM A B C D E F (Giữ nguyên vị trí của bạn) -->
+            <!-- Nút tương tác điều chỉnh kích thước responsive -->
             <div id="hotspots-container" class="absolute inset-0 z-20">
                 <button onclick="openPopup('A')" class="absolute top-[5%] left-[40%] group">
                     <span class="absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75 hotspot-ping"></span>
-                    <span class="relative inline-flex rounded-full h-14 w-14 sunbot-gradient text-white items-center justify-center text-2xl font-black shadow-lg transform transition group-hover:scale-110 border-4 border-white">A</span>
+                    <span class="relative inline-flex rounded-full h-8 w-8 text-sm lg:h-14 lg:w-14 sunbot-gradient text-white items-center justify-center lg:text-2xl font-black shadow-lg transform transition group-hover:scale-110 border-2 lg:border-4 border-white">A</span>
                 </button>
                 <button onclick="openPopup('B')" class="absolute top-[35%] left-[20%] group">
                     <span class="absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75 hotspot-ping"></span>
-                    <span class="relative inline-flex rounded-full h-14 w-14 sunbot-gradient text-white items-center justify-center text-2xl font-black shadow-lg transform transition group-hover:scale-110 border-4 border-white">B</span>
+                    <span class="relative inline-flex rounded-full h-8 w-8 text-sm lg:h-14 lg:w-14 sunbot-gradient text-white items-center justify-center lg:text-2xl font-black shadow-lg transform transition group-hover:scale-110 border-2 lg:border-4 border-white">B</span>
                 </button>
                 <button onclick="openPopup('C')" class="absolute top-[65%] left-[30%] group">
                     <span class="absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75 hotspot-ping"></span>
-                    <span class="relative inline-flex rounded-full h-14 w-14 sunbot-gradient text-white items-center justify-center text-2xl font-black shadow-lg transform transition group-hover:scale-110 border-4 border-white">C</span>
+                    <span class="relative inline-flex rounded-full h-8 w-8 text-sm lg:h-14 lg:w-14 sunbot-gradient text-white items-center justify-center lg:text-2xl font-black shadow-lg transform transition group-hover:scale-110 border-2 lg:border-4 border-white">C</span>
                 </button>
                 <button onclick="openPopup('D')" class="absolute top-[20%] left-[50%] group">
                     <span class="absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75 hotspot-ping"></span>
-                    <span class="relative inline-flex rounded-full h-14 w-14 sunbot-gradient text-white items-center justify-center text-2xl font-black shadow-lg transform transition group-hover:scale-110 border-4 border-white">D</span>
+                    <span class="relative inline-flex rounded-full h-8 w-8 text-sm lg:h-14 lg:w-14 sunbot-gradient text-white items-center justify-center lg:text-2xl font-black shadow-lg transform transition group-hover:scale-110 border-2 lg:border-4 border-white">D</span>
                 </button>
                 <button onclick="openPopup('E')" class="absolute top-[50%] left-[60%] group">
                     <span class="absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75 hotspot-ping"></span>
-                    <span class="relative inline-flex rounded-full h-14 w-14 sunbot-gradient text-white items-center justify-center text-2xl font-black shadow-lg transform transition group-hover:scale-110 border-4 border-white">E</span>
+                    <span class="relative inline-flex rounded-full h-8 w-8 text-sm lg:h-14 lg:w-14 sunbot-gradient text-white items-center justify-center lg:text-2xl font-black shadow-lg transform transition group-hover:scale-110 border-2 lg:border-4 border-white">E</span>
                 </button>
                 <button onclick="openPopup('F')" class="absolute top-[10%] left-[80%] group">
                     <span class="absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75 hotspot-ping"></span>
-                    <span class="relative inline-flex rounded-full h-14 w-14 sunbot-gradient text-white items-center justify-center text-2xl font-black shadow-lg transform transition group-hover:scale-110 border-4 border-white">F</span>
+                    <span class="relative inline-flex rounded-full h-8 w-8 text-sm lg:h-14 lg:w-14 sunbot-gradient text-white items-center justify-center lg:text-2xl font-black shadow-lg transform transition group-hover:scale-110 border-2 lg:border-4 border-white">F</span>
                 </button>
             </div>
 
             <!-- POPUP CHI TIẾT ĐIỂM CHẠM -->
-            <div id="info-popup" class="hidden absolute inset-0 z-30 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm transition-opacity duration-300 opacity-0">
-                <div class="glass-panel w-3/5 max-w-lg rounded-3xl p-8 relative transform scale-95 transition-transform duration-300" id="popup-content-box">
-                    <button onclick="closePopup()" class="absolute -top-4 -right-4 bg-red-500 hover:bg-red-600 text-white rounded-full p-3 shadow-xl transition-transform hover:scale-110">
-                        <i data-lucide="x" class="w-8 h-8"></i>
+            <div id="info-popup" class="hidden absolute inset-0 z-30 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm transition-opacity duration-300 opacity-0 p-4">
+                <div class="glass-panel w-full lg:w-3/5 max-w-lg rounded-2xl lg:rounded-3xl p-6 lg:p-8 relative transform scale-95 transition-transform duration-300" id="popup-content-box">
+                    <!-- Nút close responsive -->
+                    <button onclick="closePopup()" class="absolute top-2 right-2 lg:-top-4 lg:-right-4 bg-red-500 hover:bg-red-600 text-white rounded-full p-2 lg:p-3 shadow-xl transition-transform hover:scale-110">
+                        <i data-lucide="x" class="w-6 h-6 lg:w-8 lg:h-8"></i>
                     </button>
-                    <div class="flex items-center gap-4 mb-6">
-                        <div id="popup-letter" class="flex-shrink-0 w-16 h-16 sunbot-gradient rounded-full text-white flex items-center justify-center text-3xl font-black border-4 border-white shadow-md">A</div>
-                        <h2 id="popup-title" class="text-3xl font-black text-slate-800 uppercase tracking-tight">ÁNH SÁNG</h2>
+                    <div class="flex items-center gap-3 lg:gap-4 mb-4 lg:mb-6">
+                        <div id="popup-letter" class="flex-shrink-0 w-12 h-12 lg:w-16 lg:h-16 sunbot-gradient rounded-full text-white flex items-center justify-center text-xl lg:text-3xl font-black border-2 lg:border-4 border-white shadow-md">A</div>
+                        <h2 id="popup-title" class="text-xl lg:text-3xl font-black text-slate-800 uppercase tracking-tight">ÁNH SÁNG</h2>
                     </div>
-                    <p id="popup-desc" class="text-2xl text-slate-700 leading-relaxed font-medium">Mặt trời chiếu ánh sáng...</p>
-                    <div class="mt-8 flex justify-end">
-                        <button onclick="readPopupAloud()" class="flex items-center gap-2 bg-orange-100 text-orange-600 px-6 py-3 rounded-full font-bold text-lg hover:bg-orange-200 transition active:scale-95 shadow-sm">
-                            <i data-lucide="volume-2" class="w-6 h-6"></i> Sunbot Đọc
+                    <p id="popup-desc" class="text-base lg:text-2xl text-slate-700 leading-relaxed font-medium">Mặt trời chiếu ánh sáng...</p>
+                    <div class="mt-6 lg:mt-8 flex justify-end">
+                        <button onclick="readPopupAloud()" class="flex items-center gap-2 bg-orange-100 text-orange-600 px-4 lg:px-6 py-2 lg:py-3 rounded-full font-bold text-sm lg:text-lg hover:bg-orange-200 transition active:scale-95 shadow-sm">
+                            <i data-lucide="volume-2" class="w-4 h-4 lg:w-6 lg:h-6"></i> Sunbot Đọc
                         </button>
                     </div>
                 </div>
@@ -172,70 +181,72 @@
         </div>
     </main>
 
-    <!-- BÊN PHẢI: BẢNG ĐIỀU KHIỂN -->
-    <aside class="w-1/3 h-full bg-white shadow-[-10px_0_30px_-15px_rgba(0,0,0,0.1)] flex flex-col z-30 relative border-l-4 border-orange-100">
+    <!-- BÊN PHẢI / DƯỚI: BẢNG ĐIỀU KHIỂN SƯ PHẠM -->
+    <aside class="w-full h-[55%] lg:w-1/3 lg:h-full bg-white shadow-[-10px_0_30px_-15px_rgba(0,0,0,0.1)] flex flex-col z-30 relative border-t-4 lg:border-t-0 lg:border-l-4 border-orange-100 shrink-0">
         
-        <!-- HEADER MỚI: Tích hợp Logo và Tiêu đề bài học gọn gàng -->
-        <div class="p-5 border-b-4 border-orange-100 flex items-center gap-4 bg-gradient-to-r from-orange-50 to-amber-50">
-            <div class="w-16 h-16 bg-white rounded-2xl border-2 border-orange-200 flex items-center justify-center shadow-md p-1 flex-shrink-0">
-                <img src="assets/img/logo-sunbot-1.png" alt="Sunbot Logo" class="w-full h-full object-contain" onerror="this.onerror=null; this.src='https://via.placeholder.com/64x64/fff7ed/ea580c?text=SB'">
-            </div>
-            <div>
-                <p class="text-xs font-bold text-orange-500 uppercase tracking-wider mb-1">Bài 2: Hệ Sinh Thái Biển</p>
-                <h1 class="text-2xl font-black text-slate-800 leading-tight">Nước Biển & Màu Sắc</h1>
+        <div class="p-3 lg:p-5 border-b-2 lg:border-b-4 border-orange-100 flex items-center justify-between bg-gradient-to-r from-orange-50 to-amber-50">
+            <div class="flex items-center gap-3 lg:gap-4">
+                <div class="w-10 h-10 lg:w-14 lg:h-14 bg-white rounded-xl border-2 border-orange-200 flex items-center justify-center shadow-md p-1 flex-shrink-0">
+                    <img src="assets/img/logo-sunbot-1.png" alt="Sunbot Logo" class="w-full h-full object-contain" onerror="this.onerror=null; this.src='https://via.placeholder.com/48x48/fff7ed/ea580c?text=SB'">
+                </div>
+                <div>
+                    <p class="text-[10px] lg:text-xs font-bold text-orange-500 uppercase tracking-wider mb-0.5 lg:mb-1">Bài 2: Hệ Sinh Thái Biển</p>
+                    <h1 class="text-lg lg:text-2xl font-black text-slate-800 leading-tight">Nước Biển & Màu Sắc</h1>
+                </div>
             </div>
         </div>
 
-        <div class="flex-1 flex flex-col overflow-y-auto p-6">
-            <div class="mb-8 flex-1">
-                <h3 class="flex items-center gap-2 text-lg font-bold text-slate-800 mb-4 uppercase tracking-wider">
-                    <i data-lucide="message-circle-question" class="w-6 h-6 text-orange-500"></i> Câu hỏi Gợi mở
+        <div class="flex-1 flex flex-col overflow-y-auto p-4 lg:p-6">
+            
+            <div class="mb-4 lg:mb-8 flex-1">
+                <h3 class="flex items-center gap-2 text-base lg:text-lg font-bold text-slate-800 mb-3 lg:mb-4 uppercase tracking-wider">
+                    <i data-lucide="message-circle-question" class="w-5 h-5 lg:w-6 lg:h-6 text-orange-500"></i> Câu hỏi Gợi mở
                 </h3>
-                <div class="space-y-4">
-                    <div class="border-2 border-slate-100 rounded-2xl overflow-hidden transition-all hover:border-orange-300">
-                        <button onclick="toggleAccordion('q1')" class="w-full text-left p-4 bg-white flex justify-between items-start focus:outline-none hover:bg-orange-50">
-                            <div class="flex gap-3 items-start pr-2">
-                                <span class="w-4 h-4 rounded-full bg-green-500 flex-shrink-0 mt-1.5 shadow-sm"></span>
-                                <span class="text-lg font-bold text-slate-700">1. Bạn thấy nước biển ở trong tranh có màu gì nhỉ?</span>
+                <div class="space-y-3 lg:space-y-4">
+                    <div class="border-2 border-slate-100 rounded-xl lg:rounded-2xl overflow-hidden transition-all hover:border-orange-300">
+                        <button onclick="toggleAccordion('q1')" class="w-full text-left p-3 lg:p-4 bg-white flex justify-between items-start focus:outline-none hover:bg-orange-50">
+                            <div class="flex gap-2 lg:gap-3 items-start pr-2">
+                                <span class="w-3 h-3 lg:w-4 lg:h-4 rounded-full bg-green-500 flex-shrink-0 mt-1 lg:mt-1.5 shadow-sm"></span>
+                                <span class="text-sm lg:text-lg font-bold text-slate-700">1. Bạn thấy nước biển ở trong tranh có màu gì nhỉ?</span>
                             </div>
-                            <i data-lucide="chevron-down" id="icon-q1" class="w-6 h-6 text-slate-400 transition-transform flex-shrink-0"></i>
+                            <i data-lucide="chevron-down" id="icon-q1" class="w-5 h-5 lg:w-6 lg:h-6 text-slate-400 transition-transform flex-shrink-0"></i>
                         </button>
-                        <div id="q1" class="hidden bg-orange-50 px-4 py-4 border-t border-orange-100">
-                            <div class="flex gap-3">
-                                <i data-lucide="lightbulb" class="w-6 h-6 text-orange-600 flex-shrink-0"></i>
-                                <p class="text-base text-slate-700 font-medium">Nước biển có màu xanh (xanh dương, xanh lá...). Ở những chỗ khác nhau, màu xanh lại đậm nhạt khác nhau đấy!</p>
+                        <div id="q1" class="hidden bg-orange-50 px-3 lg:px-4 py-3 lg:py-4 border-t border-orange-100">
+                            <div class="flex gap-2 lg:gap-3">
+                                <i data-lucide="lightbulb" class="w-5 h-5 lg:w-6 lg:h-6 text-orange-600 flex-shrink-0"></i>
+                                <p class="text-sm lg:text-base text-slate-700 font-medium">Nước biển có màu xanh (xanh dương, xanh lá...). Ở những chỗ khác nhau, màu xanh lại đậm nhạt khác nhau đấy!</p>
                             </div>
                         </div>
                     </div>
                     
-                    <div class="border-2 border-slate-100 rounded-2xl overflow-hidden transition-all hover:border-orange-300">
-                        <button onclick="toggleAccordion('q2')" class="w-full text-left p-4 bg-white flex justify-between items-start focus:outline-none hover:bg-orange-50">
-                            <div class="flex gap-3 items-start pr-2">
-                                <span class="w-4 h-4 rounded-full bg-yellow-400 flex-shrink-0 mt-1.5 shadow-sm"></span>
-                                <span class="text-lg font-bold text-slate-700">2. Nước ở chỗ nông (gần bờ) và sâu có giống nhau không?</span>
+                    <div class="border-2 border-slate-100 rounded-xl lg:rounded-2xl overflow-hidden transition-all hover:border-orange-300">
+                        <button onclick="toggleAccordion('q2')" class="w-full text-left p-3 lg:p-4 bg-white flex justify-between items-start focus:outline-none hover:bg-orange-50">
+                            <div class="flex gap-2 lg:gap-3 items-start pr-2">
+                                <span class="w-3 h-3 lg:w-4 lg:h-4 rounded-full bg-yellow-400 flex-shrink-0 mt-1 lg:mt-1.5 shadow-sm"></span>
+                                <span class="text-sm lg:text-lg font-bold text-slate-700">2. Nước ở chỗ nông và sâu có giống nhau không?</span>
                             </div>
-                            <i data-lucide="chevron-down" id="icon-q2" class="w-6 h-6 text-slate-400 transition-transform flex-shrink-0"></i>
+                            <i data-lucide="chevron-down" id="icon-q2" class="w-5 h-5 lg:w-6 lg:h-6 text-slate-400 transition-transform flex-shrink-0"></i>
                         </button>
-                        <div id="q2" class="hidden bg-orange-50 px-4 py-4 border-t border-orange-100">
-                            <div class="flex gap-3">
-                                <i data-lucide="lightbulb" class="w-6 h-6 text-orange-600 flex-shrink-0"></i>
-                                <p class="text-base text-slate-700 font-medium">Không giống nhau đâu. Nước càng sâu thì màu xanh càng đậm. Nước gần bờ thường nhạt hơn hoặc trong suốt.</p>
+                        <div id="q2" class="hidden bg-orange-50 px-3 lg:px-4 py-3 lg:py-4 border-t border-orange-100">
+                            <div class="flex gap-2 lg:gap-3">
+                                <i data-lucide="lightbulb" class="w-5 h-5 lg:w-6 lg:h-6 text-orange-600 flex-shrink-0"></i>
+                                <p class="text-sm lg:text-base text-slate-700 font-medium">Không giống nhau đâu. Nước càng sâu thì màu xanh càng đậm. Nước gần bờ thường nhạt hơn hoặc trong suốt.</p>
                             </div>
                         </div>
                     </div>
 
-                    <div class="border-2 border-slate-100 rounded-2xl overflow-hidden transition-all hover:border-orange-300">
-                        <button onclick="toggleAccordion('q3')" class="w-full text-left p-4 bg-white flex justify-between items-start focus:outline-none hover:bg-orange-50">
-                            <div class="flex gap-3 items-start pr-2">
-                                <span class="w-4 h-4 rounded-full bg-red-500 flex-shrink-0 mt-1.5 shadow-sm"></span>
-                                <span class="text-lg font-bold text-slate-700">3. Theo bạn, những yếu tố nào quyết định màu của nước biển?</span>
+                    <div class="border-2 border-slate-100 rounded-xl lg:rounded-2xl overflow-hidden transition-all hover:border-orange-300">
+                        <button onclick="toggleAccordion('q3')" class="w-full text-left p-3 lg:p-4 bg-white flex justify-between items-start focus:outline-none hover:bg-orange-50">
+                            <div class="flex gap-2 lg:gap-3 items-start pr-2">
+                                <span class="w-3 h-3 lg:w-4 lg:h-4 rounded-full bg-red-500 flex-shrink-0 mt-1 lg:mt-1.5 shadow-sm"></span>
+                                <span class="text-sm lg:text-lg font-bold text-slate-700">3. Theo bạn, những yếu tố nào quyết định màu nước biển?</span>
                             </div>
-                            <i data-lucide="chevron-down" id="icon-q3" class="w-6 h-6 text-slate-400 transition-transform flex-shrink-0"></i>
+                            <i data-lucide="chevron-down" id="icon-q3" class="w-5 h-5 lg:w-6 lg:h-6 text-slate-400 transition-transform flex-shrink-0"></i>
                         </button>
-                        <div id="q3" class="hidden bg-orange-50 px-4 py-4 border-t border-orange-100">
-                            <div class="flex gap-3">
-                                <i data-lucide="lightbulb" class="w-6 h-6 text-orange-600 flex-shrink-0"></i>
-                                <p class="text-base text-slate-700 font-medium">Ánh sáng mặt trời chiếu xuống + Màu bầu trời + Độ sâu + Sóng biển + Các sinh vật nhỏ xíu dưới nước tạo nên màu biển đấy.</p>
+                        <div id="q3" class="hidden bg-orange-50 px-3 lg:px-4 py-3 lg:py-4 border-t border-orange-100">
+                            <div class="flex gap-2 lg:gap-3">
+                                <i data-lucide="lightbulb" class="w-5 h-5 lg:w-6 lg:h-6 text-orange-600 flex-shrink-0"></i>
+                                <p class="text-sm lg:text-base text-slate-700 font-medium">Ánh sáng mặt trời chiếu xuống + Màu bầu trời + Độ sâu + Sóng biển + Các sinh vật nhỏ xíu dưới nước tạo nên màu biển đấy.</p>
                             </div>
                         </div>
                     </div>
@@ -243,23 +254,21 @@
             </div>
 
             <!-- TỔ HỢP NÚT ĐIỀU KHIỂN CHÍNH -->
-            <div class="flex flex-col gap-3 mt-auto pt-2">
-                <!-- Dòng 1: Tổng quan và Thực hành -->
-                <div class="grid grid-cols-2 gap-3">
-                    <button onclick="openOverview()" class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl p-4 text-base font-black shadow-md transition transform hover:-translate-y-1 flex justify-center items-center gap-2 active:scale-95">
-                        <i data-lucide="image" class="w-5 h-5"></i> TỔNG QUAN
+            <div class="flex flex-col gap-2 lg:gap-3 mt-auto pt-2">
+                <div class="grid grid-cols-2 gap-2 lg:gap-3">
+                    <button onclick="openOverview()" class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl lg:rounded-2xl p-3 lg:p-4 text-xs lg:text-base font-black shadow-md transition transform hover:-translate-y-1 flex justify-center items-center gap-1 lg:gap-2 active:scale-95">
+                        <i data-lucide="image" class="w-4 h-4 lg:w-5 lg:h-5"></i> TỔNG QUAN
                     </button>
-                    <button onclick="openPracticeMode()" class="sunbot-gradient text-white rounded-2xl p-4 text-base font-black shadow-md transition transform hover:-translate-y-1 flex justify-center items-center gap-2 active:scale-95">
-                        <i data-lucide="flask-conical" class="w-5 h-5"></i> THỰC HÀNH
+                    <button onclick="openPracticeMode()" class="sunbot-gradient text-white rounded-xl lg:rounded-2xl p-3 lg:p-4 text-xs lg:text-base font-black shadow-md transition transform hover:-translate-y-1 flex justify-center items-center gap-1 lg:gap-2 active:scale-95">
+                        <i data-lucide="flask-conical" class="w-4 h-4 lg:w-5 lg:h-5"></i> THỰC HÀNH
                     </button>
                 </div>
-                <!-- Dòng 2: Game nhanh và Trắc nghiệm -->
-                <div class="grid grid-cols-2 gap-3">
-                    <button onclick="openGameHub()" class="bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-2xl p-4 text-base font-black shadow-md transition transform hover:-translate-y-1 flex justify-center items-center gap-2 active:scale-95">
-                        <i data-lucide="gamepad-2" class="w-5 h-5"></i> GAME NHANH
+                <div class="grid grid-cols-2 gap-2 lg:gap-3">
+                    <button onclick="openGameHub()" class="bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-xl lg:rounded-2xl p-3 lg:p-4 text-xs lg:text-base font-black shadow-md transition transform hover:-translate-y-1 flex justify-center items-center gap-1 lg:gap-2 active:scale-95">
+                        <i data-lucide="gamepad-2" class="w-4 h-4 lg:w-5 lg:h-5"></i> GAME NHANH
                     </button>
-                    <button onclick="selectDifficulty(5)" class="bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-2xl p-4 text-base font-black shadow-md transition transform hover:-translate-y-1 flex justify-center items-center gap-2 active:scale-95">
-                        <i data-lucide="lightbulb" class="w-5 h-5"></i> TRẮC NGHIỆM
+                    <button onclick="selectDifficulty(5)" class="bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-xl lg:rounded-2xl p-3 lg:p-4 text-xs lg:text-base font-black shadow-md transition transform hover:-translate-y-1 flex justify-center items-center gap-1 lg:gap-2 active:scale-95">
+                        <i data-lucide="lightbulb" class="w-4 h-4 lg:w-5 lg:h-5"></i> TRẮC NGHIỆM
                     </button>
                 </div>
             </div>
@@ -269,208 +278,208 @@
     <!-- MÀN HÌNH TỔNG QUAN BÀI HỌC (LIGHTBOX HIỂN THỊ ẢNH PLATE-2 FULL TỶ LỆ) -->
     <div id="overview-modal" class="hidden fixed inset-0 z-[70] bg-slate-900/95 backdrop-blur-md flex items-center justify-center p-4 sm:p-8">
         <div class="relative w-full h-full flex items-center justify-center modal-enter" id="overview-content">
-            <button onclick="closeOverview()" class="absolute top-2 right-2 md:top-4 md:right-4 z-50 bg-red-500 hover:bg-red-600 text-white rounded-full p-3 shadow-[0_0_15px_rgba(239,68,68,0.5)] transition-transform hover:scale-110 border-2 border-white">
-                <i data-lucide="x" class="w-8 h-8"></i>
+            <button onclick="closeOverview()" class="absolute top-2 right-2 md:top-4 md:right-4 z-50 bg-red-500 hover:bg-red-600 text-white rounded-full p-2 md:p-3 shadow-[0_0_15px_rgba(239,68,68,0.5)] transition-transform hover:scale-110 border-2 border-white">
+                <i data-lucide="x" class="w-6 h-6 md:w-8 md:h-8"></i>
             </button>
-            <img src="assets/img/plate-2.jpg" alt="Tổng quan bài học" class="max-w-[95vw] max-h-[85vh] rounded-2xl shadow-[0_0_50px_rgba(0,0,0,0.8)] border-8 border-white object-contain mx-auto" onerror="this.onerror=null; this.src='https://via.placeholder.com/1920x1080/1e293b/fff?text=Chua+co+anh+plate-2.jpg'">
+            <img src="assets/img/plate-2.jpg" alt="Tổng quan bài học" class="max-w-[95vw] max-h-[85vh] rounded-2xl shadow-[0_0_50px_rgba(0,0,0,0.8)] border-4 md:border-8 border-white object-contain mx-auto" onerror="this.onerror=null; this.src='https://via.placeholder.com/1920x1080/1e293b/fff?text=Chua+co+anh+plate-2.jpg'">
         </div>
     </div>
 
     <!-- MÀN HÌNH THỰC HÀNH TRỰC QUAN -->
-    <div id="practice-modal" class="hidden fixed inset-0 z-[60] bg-slate-900/80 backdrop-blur-md flex items-center justify-center">
-        <div class="bg-white w-11/12 h-5/6 rounded-3xl shadow-2xl flex flex-col overflow-hidden relative modal-enter" id="practice-content">
-            <div class="sunbot-gradient p-6 flex justify-between items-center text-white z-30">
-                <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-inner">
-                        <i data-lucide="flask-conical" class="w-6 h-6 text-orange-500"></i>
+    <div id="practice-modal" class="hidden fixed inset-0 z-[60] bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-2 lg:p-0">
+        <div class="bg-white w-full lg:w-11/12 h-full lg:h-5/6 rounded-2xl lg:rounded-3xl shadow-2xl flex flex-col overflow-hidden relative modal-enter" id="practice-content">
+            <div class="sunbot-gradient p-4 lg:p-6 flex justify-between items-center text-white z-30 shrink-0">
+                <div class="flex items-center gap-3 lg:gap-4">
+                    <div class="w-10 h-10 lg:w-12 lg:h-12 bg-white rounded-full flex items-center justify-center shadow-inner">
+                        <i data-lucide="flask-conical" class="w-5 h-5 lg:w-6 lg:h-6 text-orange-500"></i>
                     </div>
-                    <h2 class="text-3xl font-black uppercase tracking-wide">Thực hành cùng Sunbot</h2>
+                    <h2 class="text-xl lg:text-3xl font-black uppercase tracking-wide">Thực hành cùng Sunbot</h2>
                 </div>
                 <button onclick="closePracticeMode()" class="bg-white/20 hover:bg-white/40 rounded-full p-2 transition">
-                    <i data-lucide="x" class="w-8 h-8"></i>
+                    <i data-lucide="x" class="w-6 h-6 lg:w-8 lg:h-8"></i>
                 </button>
             </div>
             
-            <div class="flex-1 flex p-8 gap-8 bg-orange-50">
-                <div class="w-1/2 bg-white rounded-2xl border-4 border-orange-200 flex flex-col items-center justify-center p-8 shadow-inner relative overflow-hidden">
+            <div class="flex-1 flex flex-col lg:flex-row p-4 lg:p-8 gap-4 lg:gap-8 bg-orange-50 overflow-y-auto">
+                <div class="w-full lg:w-1/2 bg-white rounded-2xl border-4 border-orange-200 flex flex-col items-center justify-center p-4 lg:p-8 shadow-inner relative overflow-hidden min-h-[300px] lg:min-h-0">
                     
-                    <!-- Thông báo tương tác (Biến mất khi bật đèn) -->
-                    <div id="flash-hint" class="absolute top-6 left-1/2 transform -translate-x-1/2 bg-yellow-100 text-yellow-700 px-6 py-2 rounded-full font-bold animate-pulse border-2 border-yellow-300 pointer-events-none z-30 whitespace-nowrap transition-opacity duration-500">
-                        👆 Chạm vào Sunbot để bật đèn pin nhé!
+                    <div id="flash-hint" class="absolute top-4 lg:top-6 left-1/2 transform -translate-x-1/2 bg-yellow-100 text-yellow-700 px-4 lg:px-6 py-1.5 lg:py-2 rounded-full font-bold animate-pulse border-2 border-yellow-300 pointer-events-none z-30 whitespace-nowrap transition-opacity duration-500 text-xs lg:text-base">
+                        👆 Chạm vào Sunbot bật đèn pin!
                     </div>
 
-                    <!-- Tia sáng của đèn pin (Ẩn mặc định) -->
-                    <div id="flashlight-beam" class="hidden absolute top-[130px] right-[85px] w-[140%] h-[400px] light-beam z-10 pointer-events-none -rotate-[22deg]"></div>
+                    <div id="practice-result" class="absolute top-2 left-2 lg:top-4 lg:left-4 bg-blue-100 text-blue-800 p-3 lg:p-4 rounded-xl border-l-4 lg:border-l-8 border-blue-600 shadow-lg z-30 opacity-0 scale-95 transition-all duration-500 max-w-[200px] lg:max-w-sm">
+                        <p class="font-black text-sm lg:text-xl mb-1">💡 BẠN THẤY CHƯA?</p>
+                        <p class="font-semibold text-xs lg:text-sm">Ánh sáng vào cốc sâu đã bị hấp thụ, làm nước có màu xanh tối thẫm lại!</p>
+                    </div>
 
-                    <!-- 3 CỐC THỦY TINH TRỰC QUAN VỚI BỌT NƯỚC SỦI -->
-                    <div class="flex gap-8 items-end justify-center h-64 w-full z-20 pb-4 relative">
+                    <!-- Responsive lightbeam -->
+                    <div id="flashlight-beam" class="hidden absolute top-[100px] lg:top-[130px] right-[60px] lg:right-[85px] w-[140%] h-[300px] lg:h-[400px] light-beam z-10 pointer-events-none -rotate-[20deg] lg:-rotate-[22deg]"></div>
+
+                    <!-- 3 CỐC THỦY TINH -->
+                    <div class="flex gap-4 lg:gap-8 items-end justify-center h-48 lg:h-64 w-full z-20 pb-2 lg:pb-4 relative mt-10 lg:mt-0">
                         
-                        <!-- Cốc 1 -->
-                        <div class="flex flex-col items-center gap-3 relative">
-                            <!-- Nhãn động -->
-                            <div class="cup-label hidden absolute -top-10 bg-white text-blue-600 px-3 py-1 rounded-lg font-bold text-sm shadow-md border border-blue-200 whitespace-nowrap z-30 animate-bounce">Sáng rõ ✨</div>
-                            <div class="glass-cup w-24 h-24">
+                        <div class="flex flex-col items-center gap-2 lg:gap-3 relative">
+                            <div class="cup-label hidden absolute -top-8 lg:-top-10 bg-white text-blue-600 px-2 lg:px-3 py-0.5 lg:py-1 rounded-lg font-bold text-xs lg:text-sm shadow-md border border-blue-200 whitespace-nowrap z-30 animate-bounce">Sáng rõ ✨</div>
+                            <div class="glass-cup w-16 h-16 lg:w-24 lg:h-24">
                                 <div id="cup-1" class="water-fill h-1/3 bg-blue-200 water-bubbles"></div>
                             </div>
-                            <span class="font-bold text-slate-600 bg-white px-4 py-1 rounded-full shadow-sm border border-slate-200">Cạn</span>
+                            <span class="font-bold text-xs lg:text-base text-slate-600 bg-white px-2 lg:px-4 py-0.5 lg:py-1 rounded-full shadow-sm border border-slate-200">Cạn</span>
                         </div>
                         
-                        <!-- Cốc 2 -->
-                        <div class="flex flex-col items-center gap-3 relative">
-                            <div class="cup-label hidden absolute -top-10 bg-white text-blue-800 px-3 py-1 rounded-lg font-bold text-sm shadow-md border border-blue-300 whitespace-nowrap z-30 animate-bounce" style="animation-delay: 0.2s">Mờ dần 💧</div>
-                            <div class="glass-cup w-24 h-32">
+                        <div class="flex flex-col items-center gap-2 lg:gap-3 relative">
+                            <div class="cup-label hidden absolute -top-8 lg:-top-10 bg-white text-blue-800 px-2 lg:px-3 py-0.5 lg:py-1 rounded-lg font-bold text-xs lg:text-sm shadow-md border border-blue-300 whitespace-nowrap z-30 animate-bounce" style="animation-delay: 0.2s">Mờ dần 💧</div>
+                            <div class="glass-cup w-16 h-24 lg:w-24 lg:h-32">
                                 <div id="cup-2" class="water-fill h-2/3 bg-blue-400 water-bubbles"></div>
                             </div>
-                            <span class="font-bold text-slate-600 bg-white px-4 py-1 rounded-full shadow-sm border border-slate-200">Vừa</span>
+                            <span class="font-bold text-xs lg:text-base text-slate-600 bg-white px-2 lg:px-4 py-0.5 lg:py-1 rounded-full shadow-sm border border-slate-200">Vừa</span>
                         </div>
                         
-                        <!-- Cốc 3 -->
-                        <div class="flex flex-col items-center gap-3 relative">
-                            <div class="cup-label hidden absolute -top-10 bg-slate-800 text-white px-3 py-1 rounded-lg font-bold text-sm shadow-md border border-slate-600 whitespace-nowrap z-30 animate-bounce" style="animation-delay: 0.4s">Tối thẫm 🌌</div>
-                            <div class="glass-cup w-24 h-48">
+                        <div class="flex flex-col items-center gap-2 lg:gap-3 relative">
+                            <div class="cup-label hidden absolute -top-8 lg:-top-10 bg-slate-800 text-white px-2 lg:px-3 py-0.5 lg:py-1 rounded-lg font-bold text-xs lg:text-sm shadow-md border border-slate-600 whitespace-nowrap z-30 animate-bounce" style="animation-delay: 0.4s">Tối thẫm 🌌</div>
+                            <div class="glass-cup w-16 h-36 lg:w-24 lg:h-48">
                                 <div id="cup-3" class="water-fill h-full bg-blue-700 water-bubbles"></div>
                             </div>
-                            <span class="font-bold text-slate-600 bg-white px-4 py-1 rounded-full shadow-sm border border-slate-200">Sâu</span>
+                            <span class="font-bold text-xs lg:text-base text-slate-600 bg-white px-2 lg:px-4 py-0.5 lg:py-1 rounded-full shadow-sm border border-slate-200">Sâu</span>
                         </div>
                     </div>
                     
-                    <!-- LOGO SUNBOT SOI ĐÈN (Cho phép bấm) -->
-                    <div class="absolute top-12 right-12 flex flex-col items-center z-40 cursor-pointer hover:scale-110 transition-transform" onclick="toggleFlashlight()">
-                        <i data-lucide="pointer" id="hand-pointer" class="absolute -bottom-6 -left-4 w-10 h-10 text-orange-500 animate-bounce z-50 drop-shadow-md"></i>
-                        <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-[0_10px_25px_rgba(234,88,12,0.4)] border-4 border-orange-400 p-2">
+                    <div class="absolute top-4 right-4 lg:top-12 lg:right-12 flex flex-col items-center z-40 cursor-pointer hover:scale-110 transition-transform" onclick="toggleFlashlight()">
+                        <i data-lucide="pointer" id="hand-pointer" class="absolute -bottom-4 -left-2 lg:-bottom-6 lg:-left-4 w-6 h-6 lg:w-10 lg:h-10 text-orange-500 animate-bounce z-50 drop-shadow-md"></i>
+                        <div class="w-12 h-12 lg:w-20 lg:h-20 bg-white rounded-full flex items-center justify-center shadow-[0_5px_15px_rgba(234,88,12,0.4)] lg:shadow-[0_10px_25px_rgba(234,88,12,0.4)] border-2 lg:border-4 border-orange-400 p-1 lg:p-2">
                             <img src="assets/img/logo-sunbot-1.png" alt="Sunbot" class="w-full h-full object-contain" onerror="this.onerror=null; this.src='https://via.placeholder.com/64x64/fff7ed/ea580c?text=SB'">
                         </div>
-                        <i data-lucide="flashlight" id="icon-flash" class="w-10 h-10 text-slate-400 mt-2 transform -rotate-45 transition-all duration-300"></i>
+                        <i data-lucide="flashlight" id="icon-flash" class="w-6 h-6 lg:w-10 lg:h-10 text-slate-400 mt-1 lg:mt-2 transform -rotate-45 transition-all duration-300"></i>
                     </div>
                 </div>
 
-                <div class="w-1/2 flex flex-col justify-center gap-6">
-                    <h3 class="text-2xl font-black text-slate-800 mb-2">Thí nghiệm: Khám phá Độ sâu</h3>
-                    <div class="flex items-center gap-4 bg-white p-4 rounded-2xl shadow-sm border-l-8 border-green-500">
-                        <span class="w-10 h-10 rounded-full bg-green-100 text-green-600 font-black flex items-center justify-center text-xl flex-shrink-0">1</span>
-                        <p class="text-xl text-slate-700 font-semibold">Chúng mình cùng quan sát 3 cốc nước có mực nước: Cạn - Vừa - Sâu nhé.</p>
+                <div class="w-full lg:w-1/2 flex flex-col justify-center gap-4 lg:gap-6">
+                    <h3 class="text-xl lg:text-2xl font-black text-slate-800 mb-0 lg:mb-2">Thí nghiệm: Khám phá Độ sâu</h3>
+                    <div class="flex items-center gap-3 lg:gap-4 bg-white p-3 lg:p-4 rounded-xl lg:rounded-2xl shadow-sm border-l-4 lg:border-l-8 border-green-500">
+                        <span class="w-8 h-8 lg:w-10 lg:h-10 rounded-full bg-green-100 text-green-600 font-black flex items-center justify-center text-base lg:text-xl flex-shrink-0">1</span>
+                        <p class="text-sm lg:text-xl text-slate-700 font-semibold">Chúng mình cùng quan sát 3 cốc nước có mực nước: Cạn - Vừa - Sâu nhé.</p>
                     </div>
-                    <div class="flex items-center gap-4 bg-white p-4 rounded-2xl shadow-sm border-l-8 border-yellow-400">
-                        <span class="w-10 h-10 rounded-full bg-yellow-100 text-yellow-600 font-black flex items-center justify-center text-xl flex-shrink-0">2</span>
-                        <p class="text-xl text-slate-700 font-semibold">Nhấn vào bạn Sunbot để dùng đèn pin chiếu ánh sáng từ trên xuống mặt nước.</p>
+                    <div class="flex items-center gap-3 lg:gap-4 bg-white p-3 lg:p-4 rounded-xl lg:rounded-2xl shadow-sm border-l-4 lg:border-l-8 border-yellow-400">
+                        <span class="w-8 h-8 lg:w-10 lg:h-10 rounded-full bg-yellow-100 text-yellow-600 font-black flex items-center justify-center text-base lg:text-xl flex-shrink-0">2</span>
+                        <p class="text-sm lg:text-xl text-slate-700 font-semibold">Nhấn vào bạn Sunbot để dùng đèn pin chiếu ánh sáng từ trên xuống mặt nước.</p>
                     </div>
-                    <div class="flex items-center gap-4 bg-white p-4 rounded-2xl shadow-sm border-l-8 border-red-500">
-                        <span class="w-10 h-10 rounded-full bg-red-100 text-red-600 font-black flex items-center justify-center text-xl flex-shrink-0">3</span>
-                        <p class="text-xl text-slate-700 font-semibold">Cốc nước nào bị ánh sáng hấp thụ khiến màu trở nên tối và đậm màu hơn?</p>
+                    <div class="flex items-center gap-3 lg:gap-4 bg-white p-3 lg:p-4 rounded-xl lg:rounded-2xl shadow-sm border-l-4 lg:border-l-8 border-red-500">
+                        <span class="w-8 h-8 lg:w-10 lg:h-10 rounded-full bg-red-100 text-red-600 font-black flex items-center justify-center text-base lg:text-xl flex-shrink-0">3</span>
+                        <p class="text-sm lg:text-xl text-slate-700 font-semibold">Cốc nước nào bị ánh sáng hấp thụ khiến màu trở nên tối và đậm màu hơn?</p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- MÀN HÌNH CHỌN GAME (4 TRÒ CHƠI) -->
-    <div id="game-hub-modal" class="hidden fixed inset-0 z-50 bg-orange-900/90 backdrop-blur-md flex items-center justify-center">
-        <div class="w-11/12 h-5/6 rounded-3xl flex flex-col relative modal-enter" id="game-hub-content">
-            <button onclick="closeGameHub()" class="absolute top-0 right-0 bg-red-500 hover:bg-red-600 rounded-full p-4 transition shadow-md border-4 border-white z-20 hover:scale-110 flex items-center justify-center group">
-                <i data-lucide="x" class="w-8 h-8 text-white"></i>
+    <!-- MÀN HÌNH CHỌN GAME -->
+    <div id="game-hub-modal" class="hidden fixed inset-0 z-50 bg-orange-900/95 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="w-full h-full max-w-5xl rounded-3xl flex flex-col relative modal-enter" id="game-hub-content">
+            <button onclick="closeGameHub()" class="absolute top-2 right-2 lg:top-0 lg:right-0 bg-red-500 hover:bg-red-600 rounded-full p-2 lg:p-4 transition shadow-md border-2 lg:border-4 border-white z-20 hover:scale-110 flex items-center justify-center group">
+                <i data-lucide="x" class="w-6 h-6 lg:w-8 lg:h-8 text-white"></i>
+                <span class="hidden lg:block absolute -bottom-8 bg-white text-red-600 font-bold px-3 py-1 rounded-full text-sm shadow-md opacity-0 group-hover:opacity-100 transition whitespace-nowrap">Đóng</span>
             </button>
-            <div class="text-center mb-8 mt-10">
-                <h2 class="text-5xl font-black text-yellow-300 drop-shadow-lg uppercase tracking-widest">Khu Vui Chơi Sunbot</h2>
-                <p class="text-2xl text-white font-bold mt-2">Bạn muốn thử thách trò chơi nào hôm nay?</p>
+            <div class="text-center mb-6 lg:mb-8 mt-8 lg:mt-10 shrink-0">
+                <h2 class="text-3xl lg:text-5xl font-black text-yellow-300 drop-shadow-lg uppercase tracking-widest">Khu Vui Chơi</h2>
+                <p class="text-base lg:text-2xl text-white font-bold mt-2">Bạn muốn thử thách trò chơi nào hôm nay?</p>
             </div>
             
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-8 px-16 overflow-y-auto pb-10 max-w-5xl mx-auto h-full items-start justify-center">
-                <button onclick="selectDifficulty(1)" class="bg-white rounded-3xl p-6 flex flex-col items-center hover:scale-105 transition shadow-xl border-b-8 border-orange-400">
-                    <div class="text-8xl mb-2">♻️</div><h3 class="text-2xl font-black text-orange-700 text-center">Dọn Rác<br>Đại Dương</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-8 px-4 lg:px-16 overflow-y-auto pb-10 w-full items-start justify-center">
+                <button onclick="selectDifficulty(1)" class="bg-white rounded-2xl lg:rounded-3xl p-4 lg:p-6 flex sm:flex-col items-center sm:justify-center hover:scale-105 transition shadow-xl border-b-4 lg:border-b-8 border-orange-400 gap-4 sm:gap-0">
+                    <div class="text-5xl lg:text-8xl lg:mb-2">♻️</div><h3 class="text-lg lg:text-2xl font-black text-orange-700 text-left sm:text-center">Dọn Rác<br>Đại Dương</h3>
                 </button>
-                <button onclick="selectDifficulty(2)" class="bg-white rounded-3xl p-6 flex flex-col items-center hover:scale-105 transition shadow-xl border-b-8 border-blue-400">
-                    <div class="text-8xl mb-2">⚖️</div><h3 class="text-2xl font-black text-blue-700 text-center">Tách Nước<br>Mặn - Ngọt</h3>
+                <button onclick="selectDifficulty(2)" class="bg-white rounded-2xl lg:rounded-3xl p-4 lg:p-6 flex sm:flex-col items-center sm:justify-center hover:scale-105 transition shadow-xl border-b-4 lg:border-b-8 border-blue-400 gap-4 sm:gap-0">
+                    <div class="text-5xl lg:text-8xl lg:mb-2">⚖️</div><h3 class="text-lg lg:text-2xl font-black text-blue-700 text-left sm:text-center">Tách Nước<br>Mặn - Ngọt</h3>
                 </button>
-                <button onclick="selectDifficulty(3)" class="bg-white rounded-3xl p-6 flex flex-col items-center hover:scale-105 transition shadow-xl border-b-8 border-green-400">
-                    <div class="text-8xl mb-2">🐢</div><h3 class="text-2xl font-black text-green-700 text-center">Cứu Hộ<br>Rùa Biển</h3>
+                <button onclick="selectDifficulty(3)" class="bg-white rounded-2xl lg:rounded-3xl p-4 lg:p-6 flex sm:flex-col items-center sm:justify-center hover:scale-105 transition shadow-xl border-b-4 lg:border-b-8 border-green-400 gap-4 sm:gap-0">
+                    <div class="text-5xl lg:text-8xl lg:mb-2">🐢</div><h3 class="text-lg lg:text-2xl font-black text-green-700 text-left sm:text-center">Cứu Hộ<br>Rùa Biển</h3>
                 </button>
-                <button onclick="selectDifficulty(4)" class="bg-white rounded-3xl p-6 flex flex-col items-center hover:scale-105 transition shadow-xl border-b-8 border-purple-400">
-                    <div class="text-8xl mb-2">🧠</div><h3 class="text-2xl font-black text-purple-700 text-center">Trí Nhớ<br>San Hô</h3>
+                <button onclick="selectDifficulty(4)" class="bg-white rounded-2xl lg:rounded-3xl p-4 lg:p-6 flex sm:flex-col items-center sm:justify-center hover:scale-105 transition shadow-xl border-b-4 lg:border-b-8 border-purple-400 gap-4 sm:gap-0">
+                    <div class="text-5xl lg:text-8xl lg:mb-2">🧠</div><h3 class="text-lg lg:text-2xl font-black text-purple-700 text-left sm:text-center">Trí Nhớ<br>San Hô</h3>
                 </button>
             </div>
         </div>
     </div>
 
     <!-- POPUP CHỌN ĐỘ KHÓ -->
-    <div id="difficulty-modal" class="hidden absolute inset-0 z-[60] bg-black/60 backdrop-blur-sm flex items-center justify-center">
-        <div class="bg-white p-8 rounded-3xl shadow-2xl text-center max-w-lg border-8 border-orange-200 transform scale-95 transition-transform" id="diff-box">
-            <h2 class="text-3xl font-black text-slate-800 mb-6 uppercase">Chọn Cấp Độ</h2>
-            <div class="flex flex-col gap-4">
-                <button onclick="confirmLaunchGame(1)" class="flex items-center gap-4 bg-green-100 p-4 rounded-2xl hover:bg-green-200 hover:scale-105 transition border-4 border-transparent hover:border-green-300">
-                    <span class="w-8 h-8 rounded-full bg-green-500 shadow-md"></span>
-                    <span class="text-2xl font-black text-green-700">Cấp độ 1 (Dễ nhất)</span>
+    <div id="difficulty-modal" class="hidden absolute inset-0 z-[60] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white p-6 lg:p-8 rounded-2xl lg:rounded-3xl shadow-2xl text-center w-full max-w-lg border-4 lg:border-8 border-orange-200 transform scale-95 transition-transform" id="diff-box">
+            <h2 class="text-xl lg:text-3xl font-black text-slate-800 mb-4 lg:mb-6 uppercase">Chọn Cấp Độ</h2>
+            <div class="flex flex-col gap-3 lg:gap-4">
+                <button onclick="confirmLaunchGame(1)" class="flex items-center gap-3 lg:gap-4 bg-green-50 lg:bg-green-100 p-3 lg:p-4 rounded-xl lg:rounded-2xl hover:bg-green-200 hover:scale-105 transition border-2 lg:border-4 border-transparent hover:border-green-300">
+                    <span class="w-6 h-6 lg:w-8 lg:h-8 rounded-full bg-green-500 shadow-md flex-shrink-0"></span>
+                    <span class="text-lg lg:text-2xl font-black text-green-700">Cấp độ 1 (Dễ nhất)</span>
                 </button>
-                <button onclick="confirmLaunchGame(2)" class="flex items-center gap-4 bg-yellow-100 p-4 rounded-2xl hover:bg-yellow-200 hover:scale-105 transition border-4 border-transparent hover:border-yellow-300">
-                    <span class="w-8 h-8 rounded-full bg-yellow-400 shadow-md"></span>
-                    <span class="text-2xl font-black text-yellow-700">Cấp độ 2 (Thử thách)</span>
+                <button onclick="confirmLaunchGame(2)" class="flex items-center gap-3 lg:gap-4 bg-yellow-50 lg:bg-yellow-100 p-3 lg:p-4 rounded-xl lg:rounded-2xl hover:bg-yellow-200 hover:scale-105 transition border-2 lg:border-4 border-transparent hover:border-yellow-300">
+                    <span class="w-6 h-6 lg:w-8 lg:h-8 rounded-full bg-yellow-400 shadow-md flex-shrink-0"></span>
+                    <span class="text-lg lg:text-2xl font-black text-yellow-700">Cấp độ 2 (Thử thách)</span>
                 </button>
-                <button onclick="confirmLaunchGame(3)" class="flex items-center gap-4 bg-red-100 p-4 rounded-2xl hover:bg-red-200 hover:scale-105 transition border-4 border-transparent hover:border-red-300">
-                    <span class="w-8 h-8 rounded-full bg-red-500 shadow-md"></span>
-                    <span class="text-2xl font-black text-red-700">Cấp độ 3 (Siêu Khó)</span>
+                <button onclick="confirmLaunchGame(3)" class="flex items-center gap-3 lg:gap-4 bg-red-50 lg:bg-red-100 p-3 lg:p-4 rounded-xl lg:rounded-2xl hover:bg-red-200 hover:scale-105 transition border-2 lg:border-4 border-transparent hover:border-red-300">
+                    <span class="w-6 h-6 lg:w-8 lg:h-8 rounded-full bg-red-500 shadow-md flex-shrink-0"></span>
+                    <span class="text-lg lg:text-2xl font-black text-red-700">Cấp độ 3 (Siêu Khó)</span>
                 </button>
             </div>
-            <button onclick="closeDifficulty()" class="mt-6 text-slate-400 font-bold hover:text-slate-600">Quay lại</button>
+            <button onclick="closeDifficulty()" class="mt-4 lg:mt-6 text-sm lg:text-base text-slate-400 font-bold hover:text-slate-600 p-2">Quay lại</button>
         </div>
     </div>
 
     <!-- MÀN HÌNH CHƠI GAME CHÍNH THỨC -->
-    <div id="active-game-modal" class="hidden fixed inset-0 z-50 bg-slate-900/95 backdrop-blur-md flex items-center justify-center">
-        <div class="w-5/6 h-5/6 rounded-3xl shadow-2xl flex flex-col overflow-hidden relative modal-enter border-8 border-white bg-gradient-to-b from-orange-100 to-yellow-200" id="active-game-content">
+    <div id="active-game-modal" class="hidden fixed inset-0 z-50 bg-slate-900/95 backdrop-blur-md flex items-center justify-center p-2 lg:p-0">
+        <div class="w-full lg:w-5/6 h-full lg:h-5/6 rounded-2xl lg:rounded-3xl shadow-2xl flex flex-col overflow-hidden relative modal-enter border-4 lg:border-8 border-white bg-gradient-to-b from-orange-100 to-yellow-200" id="active-game-content">
             
-            <div class="p-4 flex justify-between items-center text-white sunbot-gradient shadow-md z-10 relative">
-                <button onclick="closeActiveGame()" class="bg-white text-orange-600 hover:bg-orange-50 font-bold px-4 py-2 rounded-full transition shadow-md border-2 border-orange-200 hover:scale-105 flex items-center gap-2">
-                    <i data-lucide="arrow-left" class="w-5 h-5"></i> BÀI HỌC
+            <div class="p-3 lg:p-4 flex justify-between items-center text-white sunbot-gradient shadow-md z-10 relative shrink-0">
+                <button onclick="closeActiveGame()" class="bg-white text-orange-600 hover:bg-orange-50 font-bold px-3 lg:px-4 py-1.5 lg:py-2 rounded-full transition shadow-md border-2 border-orange-200 flex items-center gap-1 lg:gap-2 text-xs lg:text-base">
+                    <i data-lucide="arrow-left" class="w-4 h-4 lg:w-5 lg:h-5"></i> <span class="hidden sm:inline">BÀI HỌC</span>
                 </button>
 
-                <div class="bg-white text-orange-600 font-black px-6 py-2 rounded-full text-xl shadow-inner border-2 border-orange-200 flex items-center gap-2">
-                    <span id="diff-indicator" class="w-4 h-4 rounded-full bg-green-500 block"></span>
+                <div class="bg-white text-orange-600 font-black px-3 lg:px-6 py-1.5 lg:py-2 rounded-full text-sm lg:text-xl shadow-inner border-2 border-orange-200 flex items-center gap-1 lg:gap-2">
+                    <span id="diff-indicator" class="w-3 h-3 lg:w-4 lg:h-4 rounded-full bg-green-500 block"></span>
                     ĐIỂM: <span id="game-score">0</span>
                 </div>
                 
-                <div class="absolute left-1/2 transform -translate-x-1/2 flex flex-col items-center top-2">
-                    <div id="game-time-display" class="text-7xl font-black text-yellow-100 drop-shadow-[0_4px_4px_rgba(0,0,0,0.3)] bg-red-500 px-8 py-2 rounded-3xl border-4 border-white animate-pulse">
+                <div class="absolute left-1/2 transform -translate-x-1/2 flex flex-col items-center top-1 lg:top-2">
+                    <div id="game-time-display" class="text-4xl lg:text-7xl font-black text-yellow-100 drop-shadow-[0_4px_4px_rgba(0,0,0,0.3)] bg-red-500 px-4 lg:px-8 py-1 lg:py-2 rounded-xl lg:rounded-3xl border-2 lg:border-4 border-white animate-pulse">
                         15
                     </div>
                 </div>
-                <div class="w-[120px]"></div>
+                <div class="w-[80px] sm:w-[120px]"></div>
             </div>
 
-            <div id="game-canvas" class="flex-1 relative overflow-hidden flex items-center justify-center p-6">
-                <!-- Nội dung game render qua JS -->
+            <div id="game-canvas" class="flex-1 relative overflow-y-auto lg:overflow-hidden flex items-center justify-center p-2 lg:p-6">
+                <!-- Nội dung game -->
             </div>
 
-            <div id="game-result" class="hidden absolute inset-0 bg-orange-900/95 backdrop-blur-md z-30 flex flex-col items-center justify-center overflow-hidden">
+            <div id="game-result" class="hidden absolute inset-0 bg-orange-900/95 backdrop-blur-md z-30 flex flex-col items-center justify-center overflow-y-auto p-4 text-center">
                 <div id="fireworks-container" class="absolute inset-0 pointer-events-none z-10"></div>
 
-                <div id="result-icon" class="text-9xl mb-4 animate-bounce z-20">🏆</div>
-                <h2 id="result-title" class="text-6xl font-black text-yellow-400 mb-8 drop-shadow-lg text-center uppercase tracking-wider z-20">Tuyệt vời!<br>Bạn làm tốt lắm!</h2>
+                <div id="result-icon" class="text-7xl lg:text-9xl mb-2 lg:mb-4 animate-bounce z-20">🏆</div>
+                <h2 id="result-title" class="text-4xl lg:text-6xl font-black text-yellow-400 mb-6 lg:mb-8 drop-shadow-lg uppercase tracking-wider z-20">Tuyệt vời!<br>Bạn làm tốt lắm!</h2>
                 
-                <div class="flex gap-4 z-20 relative" id="result-actions">
+                <div class="flex flex-col sm:flex-row gap-3 lg:gap-4 z-20 relative w-full sm:w-auto px-4 sm:px-0" id="result-actions">
                     <!-- Nút gen động -->
                 </div>
             </div>
 
             <!-- MÀN HÌNH TỔNG KẾT ĐẶC BIỆT CHO TRẮC NGHIỆM -->
-            <div id="quiz-summary-result" class="hidden absolute inset-0 bg-blue-900/95 backdrop-blur-md z-30 flex flex-col items-center justify-center overflow-hidden">
+            <div id="quiz-summary-result" class="hidden absolute inset-0 bg-blue-900/95 backdrop-blur-md z-30 flex flex-col items-center justify-center p-4 overflow-y-auto">
                 <div id="quiz-fireworks" class="absolute inset-0 pointer-events-none z-10"></div>
-                <div class="bg-white p-8 rounded-3xl shadow-2xl z-20 max-w-3xl w-full text-center border-8 border-orange-200">
-                    <div class="text-7xl mb-4 animate-bounce">🎉</div>
-                    <h2 class="text-4xl font-black text-orange-600 mb-6 uppercase">Hoàn Thành Xuất Sắc!</h2>
+                <div class="bg-white p-6 lg:p-8 rounded-2xl lg:rounded-3xl shadow-2xl z-20 w-full max-w-3xl text-center border-4 lg:border-8 border-orange-200 my-auto">
+                    <div class="text-5xl lg:text-7xl mb-2 lg:mb-4 animate-bounce">🎉</div>
+                    <h2 class="text-2xl lg:text-4xl font-black text-orange-600 mb-4 lg:mb-6 uppercase">Hoàn Thành Xuất Sắc!</h2>
                     
-                    <div class="bg-blue-50 p-6 rounded-2xl text-left border-l-8 border-blue-500 mb-8">
-                        <h3 class="text-2xl font-black text-slate-800 mb-4">🧠 KIẾN THỨC CẦN NHỚ:</h3>
-                        <ul class="text-xl text-slate-700 font-semibold space-y-3">
+                    <div class="bg-blue-50 p-4 lg:p-6 rounded-xl lg:rounded-2xl text-left border-l-4 lg:border-l-8 border-blue-500 mb-6 lg:mb-8">
+                        <h3 class="text-lg lg:text-2xl font-black text-slate-800 mb-2 lg:mb-4">🧠 KIẾN THỨC CẦN NHỚ:</h3>
+                        <ul class="text-sm lg:text-xl text-slate-700 font-semibold space-y-2 lg:space-y-3">
                             <li>✨ Nước biển màu xanh do <b>phản xạ ánh sáng mặt trời</b>.</li>
                             <li>🌊 Nước <b>càng sâu</b> thì màu xanh <b>càng đậm</b>.</li>
-                            <li>🐟 Bầu trời, sóng biển và cả các <b>sinh vật nhỏ li ti</b> cũng góp phần tạo nên màu sắc đa dạng của đại dương.</li>
+                            <li>🐟 Bầu trời, sóng biển và cả <b>sinh vật nhỏ li ti</b> cũng góp phần tạo màu đại dương.</li>
                         </ul>
                     </div>
 
-                    <div class="flex justify-center gap-4">
-                        <button onclick="closeActiveGame()" class="bg-slate-200 text-slate-700 px-8 py-4 rounded-full text-xl font-black shadow-lg hover:scale-105 transition-transform border-2 border-slate-300 flex items-center gap-2">
+                    <div class="flex flex-col sm:flex-row justify-center gap-3 lg:gap-4">
+                        <button onclick="closeActiveGame()" class="w-full sm:w-auto bg-slate-200 text-slate-700 px-6 lg:px-8 py-3 lg:py-4 rounded-xl lg:rounded-full text-base lg:text-xl font-black shadow-lg hover:scale-105 transition-transform border-2 border-slate-300 flex items-center justify-center gap-2">
                             <i data-lucide="book-open"></i> VỀ BÀI HỌC
                         </button>
-                        <button onclick="confirmLaunchGame(currentLevel)" class="sunbot-gradient text-white px-8 py-4 rounded-full text-xl font-black shadow-xl hover:scale-105 transition-transform border-4 border-white">
+                        <button onclick="confirmLaunchGame(currentLevel)" class="w-full sm:w-auto sunbot-gradient text-white px-6 lg:px-8 py-3 lg:py-4 rounded-xl lg:rounded-full text-base lg:text-xl font-black shadow-xl hover:scale-105 transition-transform border-2 lg:border-4 border-white">
                             CHƠI LẠI TRẮC NGHIỆM
                         </button>
                     </div>
@@ -567,6 +576,7 @@
                         document.removeEventListener(evt, startAudioEnvironment);
                     });
                 }).catch(e => {
+                    console.log("Waiting for user interaction to play music...");
                     hasInteracted = false; 
                 });
             }
@@ -585,9 +595,7 @@
                 lucide.createIcons();
                 
                 if (playPromise !== undefined && playPromise !== null) {
-                    playPromise.then(() => {
-                        bgMusic.pause();
-                    }).catch(error => console.log(error));
+                    playPromise.then(() => { bgMusic.pause(); }).catch(error => console.log(error));
                 } else {
                     bgMusic.pause();
                 }
@@ -599,6 +607,7 @@
                 playPromise = bgMusic.play();
                 if (playPromise !== undefined) {
                     playPromise.catch(error => {
+                        console.log("Audio play interrupted:", error);
                         isMusicPlaying = false;
                         musicIcon.setAttribute('data-lucide', 'volume-x');
                         lucide.createIcons();
@@ -608,18 +617,22 @@
         }
 
         // ==========================================
-        // 2. HIỆU ỨNG PHÁO HOA NÂNG CẤP 
+        // 2. HIỆU ỨNG PHÁO HOA NÂNG CẤP
         // ==========================================
         function createFireworks(containerId = 'fireworks-container') {
             const container = document.getElementById(containerId);
             container.innerHTML = ''; 
             const colors = ['#fcd34d', '#f97316', '#ef4444', '#3b82f6', '#10b981', '#ec4899', '#ffffff'];
             
-            for(let i = 0; i < 150; i++) {
+            // Số lượng hạt ít hơn trên mobile cho đỡ giật
+            const isMobile = window.innerWidth < 768;
+            const particleCount = isMobile ? 80 : 150;
+
+            for(let i = 0; i < particleCount; i++) {
                 const particle = document.createElement('div');
                 particle.className = 'absolute rounded-full shadow-lg';
                 
-                const size = Math.random() * 14 + 6; 
+                const size = Math.random() * (isMobile ? 10 : 14) + 4; 
                 particle.style.width = size + 'px';
                 particle.style.height = size + 'px';
                 particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
@@ -628,13 +641,13 @@
                 particle.style.top = '50%';
                 
                 const angle = Math.random() * Math.PI * 2;
-                const velocity = 300 + Math.random() * 800; 
+                const velocity = 200 + Math.random() * (isMobile ? 400 : 800); 
                 const tx = Math.cos(angle) * velocity;
                 const ty = Math.sin(angle) * velocity;
                 
                 particle.animate([
                     { transform: 'translate(-50%, -50%) scale(1)', opacity: 1 },
-                    { transform: `translate(calc(-50% + ${tx}px), calc(-50% + ${ty + 400}px)) scale(0)`, opacity: 0 }
+                    { transform: `translate(calc(-50% + ${tx}px), calc(-50% + ${ty + (isMobile? 200:400)}px)) scale(0)`, opacity: 0 }
                 ], { 
                     duration: 3000 + Math.random() * 4000, 
                     easing: 'cubic-bezier(0.1, 0.8, 0.3, 1)' 
@@ -669,27 +682,27 @@
             const cup3 = document.getElementById('cup-3');
             const hint = document.getElementById('flash-hint');
             const pointer = document.getElementById('hand-pointer');
+            const resultText = document.getElementById('practice-result');
             
             if(beam.classList.contains('hidden')) {
-                // Bật đèn
                 beam.classList.remove('hidden');
                 icon.classList.add('text-yellow-400', 'drop-shadow-[0_0_15px_rgba(250,204,21,0.8)]');
                 icon.classList.remove('text-slate-400');
                 
-                // Đổi màu nước theo độ sâu (Hấp thụ ánh sáng)
                 cup1.className = "absolute bottom-0 w-full h-1/3 bg-cyan-300 water-fill water-bubbles shadow-[0_-5px_15px_rgba(103,232,249,0.5)]";
                 cup2.className = "absolute bottom-0 w-full h-2/3 bg-blue-600 water-fill water-bubbles";
-                cup3.className = "absolute bottom-0 w-full h-full bg-slate-800 water-fill water-bubbles"; // Tối sẫm
+                cup3.className = "absolute bottom-0 w-full h-full bg-slate-800 water-fill water-bubbles"; 
                 
                 hint.classList.add('opacity-0');
                 if(pointer) pointer.classList.add('hidden');
                 
-                // Hiện các nhãn chữ trên các cốc
                 document.querySelectorAll('.cup-label').forEach(label => {
                     label.classList.remove('hidden');
                 });
+                
+                resultText.classList.remove('opacity-0', 'scale-95');
+                resultText.classList.add('opacity-100', 'scale-100');
             } else {
-                // Tắt đèn
                 beam.classList.add('hidden');
                 icon.classList.remove('text-yellow-400', 'drop-shadow-[0_0_15px_rgba(250,204,21,0.8)]');
                 icon.classList.add('text-slate-400');
@@ -701,11 +714,14 @@
                 document.querySelectorAll('.cup-label').forEach(label => {
                     label.classList.add('hidden');
                 });
+
+                resultText.classList.add('opacity-0', 'scale-95');
+                resultText.classList.remove('opacity-100', 'scale-100');
             }
         }
 
         // ==========================================
-        // 3. LOGIC BÀI HỌC (POPUP CHỮ TRÊN ẢNH)
+        // 3. LOGIC BÀI HỌC
         // ==========================================
         const lessonData = {
             'A': { title: 'ÁNH SÁNG', desc: 'Mặt trời chiếu ánh sáng xuống mặt nước. Nếu không có ánh sáng, biển sẽ tối thui!' },
@@ -839,9 +855,9 @@
             document.getElementById('quiz-summary-result').classList.add('hidden');
             
             const indicator = document.getElementById('diff-indicator');
-            if(level === 1) indicator.className = 'w-4 h-4 rounded-full bg-green-500 block';
-            else if(level === 2) indicator.className = 'w-4 h-4 rounded-full bg-yellow-400 block';
-            else indicator.className = 'w-4 h-4 rounded-full bg-red-500 block animate-pulse';
+            if(level === 1) indicator.className = 'w-3 h-3 lg:w-4 lg:h-4 rounded-full bg-green-500 block';
+            else if(level === 2) indicator.className = 'w-3 h-3 lg:w-4 lg:h-4 rounded-full bg-yellow-400 block';
+            else indicator.className = 'w-3 h-3 lg:w-4 lg:h-4 rounded-full bg-red-500 block animate-pulse';
 
             score = 0;
             document.getElementById('game-score').innerText = score;
@@ -854,13 +870,13 @@
             const resultActions = document.getElementById('result-actions');
             if(currentGameId !== 5) {
                 resultActions.innerHTML = `
-                    <button onclick="closeActiveGame()" class="bg-white text-orange-600 px-8 py-4 rounded-full text-xl font-black shadow-xl hover:scale-105 transition-transform border-4 border-orange-200 flex items-center gap-2">
+                    <button onclick="closeActiveGame()" class="w-full sm:w-auto bg-white text-orange-600 px-6 lg:px-8 py-3 lg:py-4 rounded-xl lg:rounded-full text-base lg:text-xl font-black shadow-xl hover:scale-105 transition-transform border-2 lg:border-4 border-orange-200 flex items-center justify-center gap-2">
                         <i data-lucide="book-open"></i> BÀI HỌC
                     </button>
-                    <button onclick="closeGameAndOpenHub()" class="bg-white text-orange-600 px-8 py-4 rounded-full text-xl font-black shadow-xl hover:scale-105 transition-transform border-4 border-orange-200">
+                    <button onclick="closeGameAndOpenHub()" class="w-full sm:w-auto bg-white text-orange-600 px-6 lg:px-8 py-3 lg:py-4 rounded-xl lg:rounded-full text-base lg:text-xl font-black shadow-xl hover:scale-105 transition-transform border-2 lg:border-4 border-orange-200">
                         CHỌN GAME KHÁC
                     </button>
-                    <button id="btn-replay" onclick="confirmLaunchGame(${level})" class="sunbot-gradient text-white px-8 py-4 rounded-full text-xl font-black shadow-xl hover:scale-105 transition-transform border-4 border-white">
+                    <button id="btn-replay" onclick="confirmLaunchGame(${level})" class="w-full sm:w-auto sunbot-gradient text-white px-6 lg:px-8 py-3 lg:py-4 rounded-xl lg:rounded-full text-base lg:text-xl font-black shadow-xl hover:scale-105 transition-transform border-2 lg:border-4 border-white">
                         CHƠI LẠI
                     </button>
                 `;
@@ -889,13 +905,13 @@
                 
                 document.getElementById('result-icon').innerText = '🏆';
                 document.getElementById('result-title').innerText = 'Tuyệt vời!\nBạn làm tốt lắm!';
-                document.getElementById('result-title').className = "text-6xl font-black text-yellow-400 mb-8 drop-shadow-lg text-center uppercase tracking-wider z-20";
+                document.getElementById('result-title').className = "text-4xl lg:text-6xl font-black text-yellow-400 mb-6 lg:mb-8 drop-shadow-lg uppercase tracking-wider z-20";
             } else {
                 playWrong();
                 document.getElementById('fireworks-container').innerHTML = '';
                 document.getElementById('result-icon').innerText = '⏰';
-                document.getElementById('result-title').innerText = 'Hết giờ rồi!\nChúng mình cùng thử lại nhé!';
-                document.getElementById('result-title').className = "text-6xl font-black text-red-400 mb-8 drop-shadow-lg text-center uppercase tracking-wider z-20";
+                document.getElementById('result-title').innerText = 'Hết giờ rồi!\nThử lại nhé!';
+                document.getElementById('result-title').className = "text-4xl lg:text-6xl font-black text-red-400 mb-6 lg:mb-8 drop-shadow-lg uppercase tracking-wider z-20";
             }
         }
 
@@ -950,12 +966,12 @@
             startGameLoop(timeLimit);
             
             const trashIcons = ['🥤', '🛍️', '🥫', '📦', '🧃', '🩴', '📰'];
-            canvas.innerHTML = `<div class="absolute bottom-10 text-orange-800/60 font-black text-3xl text-center w-full pointer-events-none">Chạm nhanh vào ${targetScore} rác để dọn sạch biển!</div>`;
+            canvas.innerHTML = `<div class="absolute bottom-4 lg:bottom-10 text-orange-800/60 font-black text-lg lg:text-3xl text-center w-full pointer-events-none px-4">Chạm nhanh vào ${targetScore} rác để dọn sạch biển!</div>`;
             
             for(let i = 0; i < targetScore; i++) {
                 let t = document.createElement('div');
                 let floatSpeed = level === 1 ? '3s' : (level === 2 ? '2s' : '1.5s');
-                t.className = 'absolute cursor-pointer text-7xl drop-shadow-lg transition-all duration-200 hover:scale-125';
+                t.className = 'absolute cursor-pointer text-5xl lg:text-7xl drop-shadow-lg transition-all duration-200 hover:scale-125';
                 t.style.animation = `float ${floatSpeed} ease-in-out infinite`;
                 t.style.left = Math.floor(Math.random() * 80 + 10) + '%';
                 t.style.top = Math.floor(Math.random() * 60 + 10) + '%'; 
@@ -990,11 +1006,11 @@
             let currentIdx = 0;
 
             canvas.innerHTML = `
-                <div class="flex w-full h-full flex-col items-center justify-center gap-10">
-                    <div id="item-display" class="text-[150px] animate-bounce drop-shadow-lg">${items[0].i}</div>
-                    <div class="flex gap-16">
-                        <button onclick="checkGame2('ngot')" class="bg-green-500 text-white font-black text-3xl px-12 py-8 rounded-3xl shadow-xl hover:scale-110 border-4 border-white active:scale-95 transition">SÔNG HỒ<br><span class="text-xl">(Nước ngọt)</span></button>
-                        <button onclick="checkGame2('man')" class="bg-blue-600 text-white font-black text-3xl px-12 py-8 rounded-3xl shadow-xl hover:scale-110 border-4 border-white active:scale-95 transition">BIỂN CẢ<br><span class="text-xl">(Nước mặn)</span></button>
+                <div class="flex w-full h-full flex-col items-center justify-center gap-6 lg:gap-10">
+                    <div id="item-display" class="text-[100px] lg:text-[150px] animate-bounce drop-shadow-lg">${items[0].i}</div>
+                    <div class="flex flex-col md:flex-row gap-4 lg:gap-16 w-full md:w-auto px-4">
+                        <button onclick="checkGame2('ngot')" class="w-full md:w-auto bg-green-500 text-white font-black text-xl lg:text-3xl px-8 lg:px-12 py-4 lg:py-8 rounded-2xl lg:rounded-3xl shadow-xl hover:scale-105 lg:hover:scale-110 border-2 lg:border-4 border-white active:scale-95 transition">SÔNG HỒ<br><span class="text-sm lg:text-xl">(Nước ngọt)</span></button>
+                        <button onclick="checkGame2('man')" class="w-full md:w-auto bg-blue-600 text-white font-black text-xl lg:text-3xl px-8 lg:px-12 py-4 lg:py-8 rounded-2xl lg:rounded-3xl shadow-xl hover:scale-105 lg:hover:scale-110 border-2 lg:border-4 border-white active:scale-95 transition">BIỂN CẢ<br><span class="text-sm lg:text-xl">(Nước mặn)</span></button>
                     </div>
                 </div>
             `;
@@ -1034,13 +1050,13 @@
             ].sort(() => Math.random() - 0.5);
 
             canvas.innerHTML = `
-                <div class="flex flex-col h-full w-full justify-between items-center pt-10 px-8 pb-4">
-                    <div id="turtle-avatar" class="text-[120px] z-10 transition-transform duration-1000 ease-in-out drop-shadow-2xl">🐢</div>
-                    <div class="text-3xl font-black text-orange-900 bg-white/50 px-8 py-2 rounded-full mb-10">Rùa con về nhà ở đâu thì an toàn?</div>
-                    <div class="w-full flex justify-around mt-auto gap-4">
-                        <button onclick="checkGame3(${options[0].isSafe})" class="flex-1 text-8xl bg-blue-300 py-8 rounded-t-[50px] hover:bg-blue-400 border-t-8 border-x-8 border-white transition hover:-translate-y-4 shadow-lg">${options[0].icon}</button>
-                        <button onclick="checkGame3(${options[1].isSafe})" class="flex-1 text-8xl bg-blue-300 py-8 rounded-t-[50px] hover:bg-blue-400 border-t-8 border-x-8 border-white transition hover:-translate-y-4 shadow-lg">${options[1].icon}</button>
-                        <button onclick="checkGame3(${options[2].isSafe})" class="flex-1 text-8xl bg-blue-300 py-8 rounded-t-[50px] hover:bg-blue-400 border-t-8 border-x-8 border-white transition hover:-translate-y-4 shadow-lg">${options[2].icon}</button>
+                <div class="flex flex-col h-full w-full justify-between items-center pt-4 lg:pt-10 px-2 lg:px-8 pb-0 lg:pb-4">
+                    <div id="turtle-avatar" class="text-[80px] lg:text-[120px] z-10 transition-transform duration-1000 ease-in-out drop-shadow-2xl">🐢</div>
+                    <div class="text-lg lg:text-3xl font-black text-orange-900 bg-white/50 px-4 lg:px-8 py-2 rounded-full mb-4 lg:mb-10 text-center">Rùa con về nhà ở đâu an toàn?</div>
+                    <div class="w-full flex justify-around mt-auto gap-2 lg:gap-4 h-1/3 lg:h-auto">
+                        <button onclick="checkGame3(${options[0].isSafe})" class="flex-1 text-5xl lg:text-8xl bg-blue-300 py-4 lg:py-8 rounded-t-[30px] lg:rounded-t-[50px] hover:bg-blue-400 border-t-4 lg:border-t-8 border-x-4 lg:border-x-8 border-white transition hover:-translate-y-4 shadow-lg flex items-center justify-center">${options[0].icon}</button>
+                        <button onclick="checkGame3(${options[1].isSafe})" class="flex-1 text-5xl lg:text-8xl bg-blue-300 py-4 lg:py-8 rounded-t-[30px] lg:rounded-t-[50px] hover:bg-blue-400 border-t-4 lg:border-t-8 border-x-4 lg:border-x-8 border-white transition hover:-translate-y-4 shadow-lg flex items-center justify-center">${options[1].icon}</button>
+                        <button onclick="checkGame3(${options[2].isSafe})" class="flex-1 text-5xl lg:text-8xl bg-blue-300 py-4 lg:py-8 rounded-t-[30px] lg:rounded-t-[50px] hover:bg-blue-400 border-t-4 lg:border-t-8 border-x-4 lg:border-x-8 border-white transition hover:-translate-y-4 shadow-lg flex items-center justify-center">${options[2].icon}</button>
                     </div>
                 </div>
             `;
@@ -1063,7 +1079,7 @@
         // GAME 4: TRÍ NHỚ SAN HÔ
         // ==================================================
         function initGame4(canvas, level) {
-            let pairsCount = level === 1 ? 2 : (level === 2 ? 3 : 4);
+            let pairsCount = level === 1 ? 2 : (level === 2 ? 3 : 4); // 4, 6, 8 cards
             targetScore = pairsCount;
             let timeLimit = level === 1 ? 15 : (level === 2 ? 20 : 25);
             startGameLoop(timeLimit);
@@ -1076,8 +1092,8 @@
             let colsClass = pairsCount <= 2 ? 2 : 4;
 
             canvas.innerHTML = `
-                <div class="absolute top-4 text-orange-800 font-black text-2xl bg-white/50 px-6 py-1 rounded-full">Lật thẻ tìm các cặp giống nhau nhé!</div>
-                <div class="grid grid-cols-${colsClass} gap-6 w-3/4 max-w-4xl h-[60%] m-auto mt-20" id="memory-board"></div>
+                <div class="absolute top-2 lg:top-4 text-orange-800 font-black text-sm lg:text-2xl bg-white/50 px-4 lg:px-6 py-1 rounded-full text-center">Lật thẻ tìm các cặp giống nhau nhé!</div>
+                <div class="grid grid-cols-2 md:grid-cols-${colsClass} gap-3 lg:gap-6 w-full lg:w-3/4 max-w-4xl h-auto lg:h-[60%] m-auto mt-12 lg:mt-20 px-2 lg:px-0" id="memory-board"></div>
             `;
             
             const board = document.getElementById('memory-board');
@@ -1086,7 +1102,7 @@
 
             deck.forEach((item) => {
                 let card = document.createElement('div');
-                card.className = 'memory-card w-full h-full min-h-[120px] max-h-[180px]';
+                card.className = 'memory-card w-full aspect-square lg:aspect-auto lg:h-full min-h-[80px] lg:min-h-[120px] lg:max-h-[180px]';
                 card.innerHTML = `<div class="memory-card-inner"><div class="memory-card-front">${item}</div><div class="memory-card-back">?</div></div>`;
                 card.dataset.val = item;
                 
@@ -1124,7 +1140,7 @@
         }
 
         // ==================================================
-        // GAME 5: TRẮC NGHIỆM KIẾN THỨC (JSON ĐỘNG)
+        // GAME 5: TRẮC NGHIỆM KIẾN THỨC
         // ==================================================
         const quizData = [
             // Cấp độ 1
@@ -1166,18 +1182,18 @@
                 let q = questions[currentQ];
                 
                 canvas.innerHTML = `
-                    <div class="flex flex-col items-center justify-center w-full h-full max-w-4xl mx-auto px-4 gap-8 fade-in" id="quiz-box">
-                        <div class="w-full flex justify-between text-orange-600 font-bold mb-2">
+                    <div class="flex flex-col items-center justify-center w-full h-full max-w-4xl mx-auto px-2 lg:px-4 gap-4 lg:gap-8 fade-in" id="quiz-box">
+                        <div class="w-full flex justify-between text-orange-600 font-bold mb-0 lg:mb-2 text-sm lg:text-base">
                             <span>Câu hỏi ${currentQ + 1} / ${targetScore}</span>
                             <span>Đúng: ${score}</span>
                         </div>
-                        <div class="w-full bg-white p-8 rounded-3xl shadow-xl border-b-8 border-orange-300 text-center">
-                            <h2 class="text-4xl font-black text-slate-800 leading-tight">${q.q}</h2>
+                        <div class="w-full bg-white p-4 lg:p-8 rounded-2xl lg:rounded-3xl shadow-xl border-b-4 lg:border-b-8 border-orange-300 text-center">
+                            <h2 class="text-xl lg:text-4xl font-black text-slate-800 leading-tight">${q.q}</h2>
                         </div>
                         
-                        <div class="w-full grid grid-cols-2 gap-6 mt-4">
-                            <button onclick="checkGame5(0, ${q.ans})" class="ans-btn p-8 bg-blue-50 hover:bg-blue-100 text-blue-800 font-black text-3xl rounded-3xl border-4 border-blue-200 shadow-md transition hover:scale-105 active:scale-95">${q.options[0]}</button>
-                            <button onclick="checkGame5(1, ${q.ans})" class="ans-btn p-8 bg-green-50 hover:bg-green-100 text-green-800 font-black text-3xl rounded-3xl border-4 border-green-200 shadow-md transition hover:scale-105 active:scale-95">${q.options[1]}</button>
+                        <div class="w-full flex flex-col sm:flex-row gap-3 lg:gap-6 mt-2 lg:mt-4">
+                            <button onclick="checkGame5(0, ${q.ans})" class="ans-btn flex-1 p-4 lg:p-8 bg-blue-50 hover:bg-blue-100 text-blue-800 font-black text-lg lg:text-3xl rounded-xl lg:rounded-3xl border-2 lg:border-4 border-blue-200 shadow-md transition hover:scale-105 active:scale-95">${q.options[0]}</button>
+                            <button onclick="checkGame5(1, ${q.ans})" class="ans-btn flex-1 p-4 lg:p-8 bg-green-50 hover:bg-green-100 text-green-800 font-black text-lg lg:text-3xl rounded-xl lg:rounded-3xl border-2 lg:border-4 border-green-200 shadow-md transition hover:scale-105 active:scale-95">${q.options[1]}</button>
                         </div>
                     </div>
                     <div id="local-fireworks" class="absolute inset-0 pointer-events-none z-10"></div>
